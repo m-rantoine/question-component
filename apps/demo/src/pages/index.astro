@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Ask a Question">
+  <h1>Ask a Question</h1>
+  <p class="lede">
+    A small demo of the <code>@askq/react</code> components: students answer questions on a lesson
+    page, and every attempt is stored as its own row so a retry never overwrites an earlier answer.
+  </p>
+
+  <ul class="card-list">
+    <li>
+      <a href="/lessons/lesson-one">
+        <strong>Lesson one</strong>
+        <span>Nine questions, one of each type.</span>
+      </a>
+    </li>
+  </ul>
+
+  <h2>Teacher dashboard</h2>
+  <p class="lede">
+    The dashboard is not linked from anywhere crawlable and is served with
+    <code>noindex</code>. For this MVP the only thing protecting it is the path
+    <code>/secretkey_abc123/teacher-dashboard</code> — see the README for how to put a real lock on
+    it before using this with a class.
+  </p>
+</Base>

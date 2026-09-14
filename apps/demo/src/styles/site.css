@@ -1,0 +1,140 @@
+:root {
+  --site-surface: #fcfcfb;
+  --site-text: #0b0b0b;
+  --site-muted: #52514e;
+  --site-border: #d9d8d2;
+  --site-accent: #2a78d6;
+  --site-notice: #fff8e6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    --site-surface: #141413;
+    --site-text: #ffffff;
+    --site-muted: #c3c2b7;
+    --site-border: #3a3a37;
+    --site-accent: #3987e5;
+    --site-notice: #2b2718;
+  }
+}
+
+:root[data-theme='dark'] {
+  --site-surface: #141413;
+  --site-text: #ffffff;
+  --site-muted: #c3c2b7;
+  --site-border: #3a3a37;
+  --site-accent: #3987e5;
+  --site-notice: #2b2718;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--site-surface);
+  color: var(--site-text);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--site-border);
+}
+
+.site-header__brand {
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 28px 48px;
+}
+
+.site-main--wide {
+  max-width: 1040px;
+}
+
+.site-footer {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px;
+  color: var(--site-muted);
+  font-size: 0.875rem;
+}
+
+h1 {
+  font-size: 1.75rem;
+  margin-block: 0 8px;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin-block: 32px 8px;
+}
+
+.lede {
+  color: var(--site-muted);
+  margin-block: 0 24px;
+}
+
+a {
+  color: var(--site-accent);
+}
+
+.notice {
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  background: var(--site-notice);
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.notice code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.card-list a {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-list a:hover {
+  border-color: var(--site-accent);
+}
+
+.card-list strong {
+  display: block;
+  color: var(--site-accent);
+}
+
+.card-list span {
+  color: var(--site-muted);
+  font-size: 0.9375rem;
+}

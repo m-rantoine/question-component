@@ -1,0 +1,19 @@
+---
+import Base from '../../layouts/Base.astro';
+import Question from '../../components/Question.tsx';
+import { lessonOne } from '../../questions';
+
+// Island props are serialised as JSON, so questions are passed by id, never as
+// objects. The ids are derived from the bank itself so they cannot drift.
+const ids = Object.values(lessonOne).map((q) => `${q.groupId}/${q.questionId}`);
+---
+
+<Base title="Lesson one — Ask a Question">
+  <h1>Lesson one</h1>
+  <p class="lede">
+    Answer each question on its own. You can change your mind and submit again unless the question
+    says otherwise — every attempt is kept.
+  </p>
+
+  {ids.map((id) => <Question client:load id={id} />)}
+</Base>

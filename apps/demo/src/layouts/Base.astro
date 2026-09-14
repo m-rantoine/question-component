@@ -1,0 +1,40 @@
+---
+import Nav from '../components/Nav.tsx';
+import SetupNotice from '../components/SetupNotice.tsx';
+import '@askq/react/styles.css';
+import '../styles/site.css';
+
+interface Props {
+  title: string;
+  noindex?: boolean;
+  /** Hides the student badge, which means nothing on the teacher dashboard. */
+  hideIdentity?: boolean;
+}
+
+const { title, noindex = false, hideIdentity = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-header__brand" href="/">Ask a Question</a>
+      {!hideIdentity && <Nav client:load />}
+    </header>
+
+    <main class="site-main">
+      <SetupNotice client:load />
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <p>Answers are stored one row per attempt — a retry never overwrites an earlier answer.</p>
+    </footer>
+  </body>
+</html>

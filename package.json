@@ -1,0 +1,16 @@
+{
+  "name": "question-component-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @askq/demo dev",
+    "build": "pnpm --filter @askq/react build && pnpm --filter @askq/demo build",
+    "build:lib": "pnpm --filter @askq/react build",
+    "test": "pnpm --filter @askq/react test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

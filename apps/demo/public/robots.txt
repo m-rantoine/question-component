@@ -1,0 +1,5 @@
+# Deliberately does NOT list the dashboard path: a Disallow rule would publish
+# the very URL it is meant to hide. The dashboard sends X-Robots-Tag: noindex
+# instead (see vercel.json) and is not linked from any crawlable page.
+User-agent: *
+Allow: /
