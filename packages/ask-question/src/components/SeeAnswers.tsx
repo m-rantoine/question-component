@@ -7,7 +7,8 @@ import {
   type StudentResult,
 } from '../aggregate';
 import { formatAnswer, formatCorrectAnswer } from '../grade';
-import { useQuestion, useQuestionSummary } from '../hooks';
+import { useLocale, useQuestion, useQuestionSummary } from '../hooks';
+import { formatNumber, formatPercent, formatTime, type Locale, type Messages } from '../i18n';
 import type { Question } from '../types';
 import { Markdown } from './Markdown';
 import { BarList, Histogram } from './summary/Charts';
@@ -28,6 +29,7 @@ export interface SeeAnswersProps {
 /** Teacher-facing results for one question. Reads from the shared group poller. */
 export function SeeAnswers({ q, id, view = 'summary', className, hideQuestion }: SeeAnswersProps) {
   const question = useQuestion(q, id);
+  const { locale, messages } = useLocale();
   const summary = useQuestionSummary(question);
   const [active, setActive] = useState<'summary' | 'per-student'>(
     view === 'per-student' ? 'per-student' : 'summary',
@@ -45,14 +47,14 @@ export function SeeAnswers({ q, id, view = 'summary', className, hideQuestion }:
           </h3>
         )}
         {view === 'toggle' ? (
-          <div className="askq-toggle" role="group" aria-label="Result view">
+          <div className="askq-toggle" role="group" aria-label={messages.resultView}>
             <button
               type="button"
               className={`askq-toggle__button ${shown === 'summary' ? 'is-active' : ''}`}
               aria-pressed={shown === 'summary'}
               onClick={() => setActive('summary')}
             >
-              Summary
+              {messages.summaryView}
             </button>
             <button
               type="button"
@@ -60,53 +62,63 @@ export function SeeAnswers({ q, id, view = 'summary', className, hideQuestion }:
               aria-pressed={shown === 'per-student'}
               onClick={() => setActive('per-student')}
             >
-              Per student
+              {messages.perStudentView}
             </button>
           </div>
         ) : null}
       </header>
 
       <p className="askq-answers__stats">
-        <strong>{summary.responded}</strong> {summary.responded === 1 ? 'student' : 'students'}
+        <strong>{formatNumber(summary.responded, locale)}</strong>{' '}
+        {messages.studentCount(summary.responded)}
         {summary.correctRate === null ? null : (
           <>
             {' · '}
-            <strong>{summary.correctCount}</strong> correct (
-            {Math.round(summary.correctRate * 100)}%)
+            {messages.correctSummary(summary.correctCount, formatPercent(summary.correctRate, locale))}
           </>
         )}
         {question.allowMultipleAttempts === false ? (
-          <span className="askq-muted"> · first attempt only</span>
+          <span className="askq-muted"> · {messages.firstAttemptOnly}</span>
         ) : null}
       </p>
 
       {snapshot.status === 'error' && summary.responded === 0 ? (
         <p className="askq-error" role="alert">
-          Could not load results: {snapshot.error}
+          {messages.couldNotLoad(snapshot.error ?? '')}
         </p>
       ) : null}
 
       {summary.responded === 0 ? (
         <p className="askq-note">
-          {snapshot.status === 'loading' ? 'Loading results…' : 'No answers yet.'}
+          {snapshot.status === 'loading' ? messages.loadingResults : messages.noAnswersYet}
         </p>
       ) : shown === 'summary' ? (
-        <SummaryView question={question} summary={summary} />
+        <SummaryView question={question} summary={summary} locale={locale} messages={messages} />
       ) : (
-        <PerStudentView question={question} summary={summary} />
+        <PerStudentView question={question} summary={summary} locale={locale} messages={messages} />
       )}
 
       {summary.responded > 0 ? (
         <p className="askq-answers__footnote">
-          Attempts per student — min {summary.attempts.min} · avg {summary.attempts.avg} · max{' '}
-          {summary.attempts.max}
+          {messages.attemptsFootnote(
+            formatNumber(summary.attempts.min, locale),
+            formatNumber(summary.attempts.avg, locale),
+            formatNumber(summary.attempts.max, locale),
+          )}
         </p>
       ) : null}
     </section>
   );
 }
 
-function SummaryView({ question, summary }: { question: Question; summary: QuestionSummary }) {
+interface ViewProps {
+  question: Question;
+  summary: QuestionSummary;
+  locale: Locale;
+  messages: Messages;
+}
+
+function SummaryView({ question, summary, locale, messages }: ViewProps) {
   switch (question.type) {
     case 'multiple-choice':
     case 'button-choice':
@@ -118,7 +130,7 @@ function SummaryView({ question, summary }: { question: Question; summary: Quest
           <BarList tallies={tallyOptions(question, summary.results)} total={summary.responded} />
           {question.partialCredit && summary.averageScore !== null ? (
             <p className="askq-note">
-              Average partial score: {Math.round(summary.averageScore * 100)}%
+              {messages.averagePartialScore(formatPercent(summary.averageScore, locale))}
             </p>
           ) : null}
         </>
@@ -151,9 +163,12 @@ function SummaryView({ question, summary }: { question: Question; summary: Quest
         <>
           <Histogram bins={numeric.bins} total={numeric.count} />
           <p className="askq-note">
-            mean {numeric.mean} · median {numeric.median}
+            {messages.meanMedian(
+              formatNumber(numeric.mean, locale),
+              formatNumber(numeric.median, locale),
+            )}
             {formatCorrectAnswer(question) ? (
-              <> · correct {formatCorrectAnswer(question)}</>
+              <> · {messages.correctValue(formatCorrectAnswer(question) as string)}</>
             ) : null}
           </p>
         </>
@@ -165,22 +180,29 @@ function SummaryView({ question, summary }: { question: Question; summary: Quest
   }
 }
 
-function PerStudentView({ question, summary }: { question: Question; summary: QuestionSummary }) {
+function PerStudentView({ question, summary, locale, messages }: ViewProps) {
   return (
     <div className="askq-table-wrap">
       <table className="askq-table">
         <thead>
           <tr>
-            <th scope="col">Student</th>
-            <th scope="col">Answer</th>
-            {summary.graded ? <th scope="col">Result</th> : null}
-            <th scope="col">Attempts</th>
-            <th scope="col">Answered</th>
+            <th scope="col">{messages.tableStudent}</th>
+            <th scope="col">{messages.tableAnswer}</th>
+            {summary.graded ? <th scope="col">{messages.tableResult}</th> : null}
+            <th scope="col">{messages.tableAttempts}</th>
+            <th scope="col">{messages.tableAnswered}</th>
           </tr>
         </thead>
         <tbody>
           {summary.results.map((result) => (
-            <StudentRow key={result.key} question={question} result={result} graded={summary.graded} />
+            <StudentRow
+              key={result.key}
+              question={question}
+              result={result}
+              graded={summary.graded}
+              locale={locale}
+              messages={messages}
+            />
           ))}
         </tbody>
       </table>
@@ -192,10 +214,14 @@ function StudentRow({
   question,
   result,
   graded,
+  locale,
+  messages,
 }: {
   question: Question;
   result: StudentResult;
   graded: boolean;
+  locale: Locale;
+  messages: Messages;
 }) {
   const multiple = result.attempts.length > 1;
   return (
@@ -209,10 +235,12 @@ function StudentRow({
           ) : (
             <span
               className={result.correct ? 'askq-verdict--ok' : 'askq-verdict--no'}
-              title={result.correct ? 'Correct' : 'Incorrect'}
+              title={result.correct ? messages.correctVerdict : messages.incorrectVerdict}
             >
               <span aria-hidden="true">{result.correct ? '✓' : '✗'}</span>
-              <span className="askq-sr-only">{result.correct ? 'Correct' : 'Incorrect'}</span>
+              <span className="askq-sr-only">
+                {result.correct ? messages.correctVerdict : messages.incorrectVerdict}
+              </span>
             </span>
           )}
         </td>
@@ -224,7 +252,9 @@ function StudentRow({
             <ol className="askq-history__list">
               {result.attempts.map((attempt) => (
                 <li key={attempt.id}>
-                  <span className="askq-history__when">{shortTime(attempt.created_at)}</span>{' '}
+                  <span className="askq-history__when">
+                    {formatTime(attempt.created_at, locale)}
+                  </span>{' '}
                   {formatAnswer(question, attempt.answer)}
                 </li>
               ))}
@@ -234,13 +264,7 @@ function StudentRow({
           result.attempts.length
         )}
       </td>
-      <td className="askq-muted">{shortTime(result.effective.created_at)}</td>
+      <td className="askq-muted">{formatTime(result.effective.created_at, locale)}</td>
     </tr>
   );
-}
-
-function shortTime(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }

@@ -1,3 +1,5 @@
+import { getMessages } from './i18n';
+
 export interface Student {
   id: string;
   name: string;
@@ -98,7 +100,7 @@ export const MAX_NAME_LENGTH = 60;
 export function signIn(rawName: string): Student {
   const name = normaliseName(rawName).slice(0, MAX_NAME_LENGTH);
   if (name.length < MIN_NAME_LENGTH) {
-    throw new Error(`Please enter at least ${MIN_NAME_LENGTH} characters.`);
+    throw new Error(getMessages().nameTooShort(MIN_NAME_LENGTH));
   }
   const student: Student = { id: randomId(), name, savedAt: Date.now() };
   current = student;

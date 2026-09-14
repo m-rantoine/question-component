@@ -1,3 +1,4 @@
+import { getMessages } from './i18n';
 import type { AnswerValue, Question } from './types';
 
 /** Trim, collapse internal whitespace, and (unless case-sensitive) lowercase. */
@@ -105,16 +106,22 @@ export function formatCorrectAnswer(question: Question): string | null {
     case 'rating':
       return question.correctAnswer === undefined
         ? null
-        : `${question.correctAnswer} of ${question.config?.max ?? 5}`;
+        : getMessages().ratingOf(question.correctAnswer, question.config?.max ?? 5);
     default:
       return null;
   }
 }
 
-/** Renders an answer value for display in the dashboard. */
+/**
+ * Renders an answer value for display in the dashboard.
+ *
+ * Only the surrounding wording is translated — the answer itself is shown
+ * exactly as the student submitted it.
+ */
 export function formatAnswer(question: Question, value: AnswerValue): string {
-  if (Array.isArray(value)) return value.length ? value.join(', ') : '(nothing selected)';
-  if (question.type === 'rating') return `${value} of ${question.config?.max ?? 5}`;
+  const messages = getMessages();
+  if (Array.isArray(value)) return value.length ? value.join(', ') : messages.nothingSelected;
+  if (question.type === 'rating') return messages.ratingOf(value, question.config?.max ?? 5);
   const text = asString(value);
-  return text.trim() ? text : '(blank)';
+  return text.trim() ? text : messages.blankAnswer;
 }

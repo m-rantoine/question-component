@@ -3,39 +3,45 @@ import { defineGroup } from '@askq/react';
 /**
  * A question bank. `defineGroup` fills in `groupId` from the first argument and
  * `questionId` from each key, so neither can drift from the object it sits in.
+ *
+ * Question text, options and correct answers are shown exactly as written here —
+ * they do NOT follow the interface language picker. The stored answer for a
+ * choice question is the option's own text, so translating options at runtime
+ * would make the same answer land in the database under two different values
+ * and split every summary in half. See the README.
  */
 export const lessonOne = defineGroup('lesson-1', {
   q1: {
     type: 'short-text',
-    question: 'What is **1 + 1**?',
-    correctAnswer: ['2', 'two'],
+    question: 'Combien font **1 + 1** ?',
+    correctAnswer: ['2', 'deux'],
     showCorrectAnswer: 'always',
-    placeholder: 'Your answer',
+    placeholder: 'Ta réponse',
   },
   q2: {
     type: 'multiple-choice',
-    question: 'An apple is a',
-    options: ['fruit', 'vegetable', 'rock', 'vehicle'],
+    question: 'Une pomme est un',
+    options: ['fruit', 'légume', 'minéral', 'véhicule'],
     correctAnswer: 'fruit',
     showCorrectAnswer: 'if-correct',
   },
   q3: {
     type: 'scale',
-    question: 'How many planets orbit the sun?',
+    question: 'Combien de planètes tournent autour du Soleil ?',
     config: { min: 0, max: 20, countBy: 1 },
     correctAnswer: 8,
     showCorrectAnswer: 'always',
   },
   q4: {
     type: 'button-choice',
-    question: 'Which of these is a _mammal_?',
-    options: ['Shark', 'Dolphin', 'Crocodile', 'Eagle'],
-    correctAnswer: 'Dolphin',
+    question: 'Lequel de ces animaux est un _mammifère_ ?',
+    options: ['Requin', 'Dauphin', 'Crocodile', 'Aigle'],
+    correctAnswer: 'Dauphin',
     showCorrectAnswer: 'if-correct',
   },
   q5: {
     type: 'checkboxes',
-    question: 'Select every **prime** number.',
+    question: 'Choisis tous les nombres **premiers**.',
     options: ['2', '4', '7', '9', '11'],
     correctAnswer: ['2', '7', '11'],
     partialCredit: true,
@@ -43,28 +49,29 @@ export const lessonOne = defineGroup('lesson-1', {
   },
   q6: {
     type: 'number',
-    question: 'Roughly how many kilometres is it from the Earth to the Moon, in thousands?',
+    question:
+      'Environ combien de milliers de kilomètres séparent la Terre de la Lune ?',
     config: { min: 0, max: 1000, step: 1, tolerance: 20 },
     correctAnswer: 384,
     showCorrectAnswer: 'always',
   },
   q7: {
     type: 'long-text',
-    question: 'In a sentence or two, explain **why** the seasons change.',
+    question: 'En une ou deux phrases, explique **pourquoi** les saisons changent.',
     minLength: 20,
     rows: 4,
     // No correct answer: this one is read, not graded.
   },
   q8: {
     type: 'rating',
-    question: 'How confident do you feel about this lesson?',
+    question: 'À quel point te sens-tu à l’aise avec cette leçon ?',
     config: { max: 5 },
     // Ungraded on purpose — a survey, not a test.
   },
   q9: {
     type: 'multiple-choice',
-    question: 'Exit ticket: was the pace of today’s lesson about right?',
-    options: ['Too slow', 'About right', 'Too fast'],
+    question: 'Billet de sortie : le rythme de la leçon d’aujourd’hui était-il bon ?',
+    options: ['Trop lent', 'Juste bien', 'Trop rapide'],
     allowMultipleAttempts: false,
   },
 });

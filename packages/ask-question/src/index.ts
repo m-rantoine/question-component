@@ -1,6 +1,7 @@
 export { AskQuestion, type AskQuestionProps } from './components/AskQuestion';
 export { SeeAnswers, type AnswersView, type SeeAnswersProps } from './components/SeeAnswers';
 export { StudentBadge, type StudentBadgeProps } from './components/StudentBadge';
+export { LanguagePicker, type LanguagePickerProps } from './components/LanguagePicker';
 export { NameGate, type NameGateProps } from './components/NameGate';
 export { IdleBanner } from './components/IdleBanner';
 export { Markdown, type MarkdownProps } from './components/Markdown';
@@ -36,6 +37,29 @@ export {
   resetIdentity,
   type Student,
 } from './identity';
+
+export {
+  useLocale,
+  useMessages,
+  type LocaleControls,
+} from './hooks';
+
+export {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_NAMES,
+  LOCALE_TAGS,
+  formatNumber,
+  formatPercent,
+  formatTime,
+  getLocale,
+  getMessages,
+  setLocale,
+  subscribeToLocale,
+  resetLocale,
+  type Locale,
+  type Messages,
+} from './i18n';
 
 export {
   useGroupAnswers,

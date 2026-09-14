@@ -56,6 +56,13 @@ body {
   text-decoration: none;
 }
 
+.site-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .site-main {
   max-width: 780px;
   margin: 0 auto;

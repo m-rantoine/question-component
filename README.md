@@ -22,6 +22,7 @@ Every submission is its own row. A second attempt never overwrites the first.
 - [Using the components](#using-the-components)
 - [Using it from Astro](#using-it-from-astro)
 - [The teacher dashboard](#the-teacher-dashboard)
+- [Language](#language)
 - [How students identify themselves](#how-students-identify-themselves)
 - [Polling and idle behaviour](#polling-and-idle-behaviour)
 - [Security: what this does and does not protect](#security-what-this-does-and-does-not-protect)
@@ -332,6 +333,53 @@ with `allowMultipleAttempts: false` — and ends with a quiet line reading
 made more than one attempt, the count expands into the full history.
 
 `toggle` renders both with a switch between them.
+
+## Language
+
+The interface ships in **French and English, with French as the default**, and a picker
+in the header switches between them.
+
+```tsx
+import { LanguagePicker } from '@askq/react';
+
+<LanguagePicker />                  // segmented control (default)
+<LanguagePicker variant="select" /> // native dropdown
+```
+
+The choice is stored per browser in `localStorage` and broadcast, so every question, the
+dashboard, the student badge and the page's own prose switch together — across Astro
+islands and across open tabs. `<html lang>` and `<title>` follow it too. Numbers,
+percentages and times are formatted per locale: French renders `moy 1,5` and `100 %`
+where English renders `avg 1.5` and `100%`.
+
+A browser set to English still starts in French — the default is deliberate, not
+negotiated with `navigator.language`. To change that, or to read the browser's
+preference instead, see `DEFAULT_LOCALE` in `packages/ask-question/src/i18n.ts`.
+
+### Adding or changing wording
+
+Translations live in one file, `packages/ask-question/src/i18n.ts`, as a typed
+`Messages` object rather than string keys — so a missing or misspelled message is a
+compile error, not a blank label in front of a class. A test asserts that both
+catalogues have exactly the same keys and that no French string was left as its English
+original.
+
+The demo site's own prose (headings, footer, the demo-mode notice) lives separately in
+`apps/demo/src/lib/site-text.ts`, since it belongs to the pages rather than the library.
+
+### Question text does not follow the picker
+
+Questions, options and correct answers are shown exactly as the question bank writes
+them. This is deliberate, and it is a data-integrity constraint rather than an
+oversight: the stored answer for a choice question **is the option's own text**, so if
+options were translated at runtime the same answer would land in the database as
+`"fruit"` for one student and `"légume"` for another, and every summary would split in
+half.
+
+Making questions bilingual properly means giving each option a stable id that is stored,
+plus a per-language label that is only displayed. That is a schema change worth doing
+deliberately — the sample bank in `apps/demo/src/questions/lesson-one.ts` is written in
+French for now.
 
 ## How students identify themselves
 

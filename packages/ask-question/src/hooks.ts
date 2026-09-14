@@ -8,11 +8,41 @@ import {
   type IdleReason,
 } from './idle';
 import { getStudent, isIdentityLoaded, subscribeToIdentity, type Student } from './identity';
+import {
+  getLocale,
+  getMessages,
+  setLocale,
+  subscribeToLocale,
+  DEFAULT_LOCALE,
+  type Locale,
+  type Messages,
+} from './i18n';
 import { resolveQuestion, tryResolveQuestion } from './registry';
 import type { GroupSnapshot } from './runtime';
 import { getGroupSnapshot, getServerGroupSnapshot, refreshGroup, subscribeToGroup } from './store';
 import { summariseQuestion, type QuestionSummary } from './aggregate';
 import type { Question } from './types';
+
+export interface LocaleControls {
+  locale: Locale;
+  messages: Messages;
+  setLocale: (locale: Locale) => void;
+}
+
+/**
+ * The active interface language. Every component reads its text through this,
+ * so switching language re-renders all of them at once — including islands in
+ * other Astro roots, which the locale store notifies directly.
+ */
+export function useLocale(): LocaleControls {
+  const locale = useSyncExternalStore(subscribeToLocale, getLocale, () => DEFAULT_LOCALE);
+  return { locale, messages: getMessages(locale), setLocale };
+}
+
+/** Shorthand for components that only need the strings. */
+export function useMessages(): Messages {
+  return useLocale().messages;
+}
 
 export function useStudent(): { student: Student | null; loaded: boolean } {
   const student = useSyncExternalStore(subscribeToIdentity, getStudent, () => null);

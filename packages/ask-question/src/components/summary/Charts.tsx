@@ -1,8 +1,6 @@
 import type { Tally } from '../../aggregate';
-
-function percent(share: number): string {
-  return `${Math.round(share * 100)}%`;
-}
+import { useMessages } from '../../hooks';
+import { formatPercent } from '../../i18n';
 
 /**
  * Horizontal bars for one measure (how many students chose each option).
@@ -15,13 +13,17 @@ function percent(share: number): string {
 export function BarList({
   tallies,
   total,
-  emptyLabel = 'No answers yet.',
+  emptyLabel,
 }: {
   tallies: Tally[];
   total: number;
   emptyLabel?: string;
 }) {
-  if (tallies.length === 0) return <p className="askq-note">{emptyLabel}</p>;
+  const messages = useMessages();
+  const percent = (share: number) => formatPercent(share);
+  if (tallies.length === 0) {
+    return <p className="askq-note">{emptyLabel ?? messages.noAnswersYet}</p>;
+  }
   const peak = Math.max(1, ...tallies.map((tally) => tally.count));
 
   return (
@@ -30,13 +32,13 @@ export function BarList({
         <li
           className={`askq-bar ${tally.isCorrect ? 'askq-bar--correct' : ''}`}
           key={tally.label}
-          title={`${tally.label}: ${tally.count} of ${total} (${percent(tally.share)})`}
+          title={`${tally.label}: ${messages.countOf(tally.count, total)} (${percent(tally.share)})`}
         >
           <div className="askq-bar__head">
             <span className="askq-bar__label">
               {tally.isCorrect ? (
                 <span className="askq-tag askq-tag--correct">
-                  <span aria-hidden="true">✓</span> correct
+                  <span aria-hidden="true">✓</span> {messages.correctTag}
                 </span>
               ) : null}
               {tally.label}
@@ -67,16 +69,21 @@ export interface HistogramBin {
 
 /** Vertical columns, one per step of the configured range — empty steps included. */
 export function Histogram({ bins, total }: { bins: HistogramBin[]; total: number }) {
-  if (bins.length === 0) return <p className="askq-note">No answers yet.</p>;
+  const messages = useMessages();
+  if (bins.length === 0) return <p className="askq-note">{messages.noAnswersYet}</p>;
   const peak = Math.max(1, ...bins.map((bin) => bin.count));
 
   return (
-    <div className="askq-histogram" role="img" aria-label={histogramLabel(bins, total)}>
+    <div
+      className="askq-histogram"
+      role="img"
+      aria-label={histogramLabel(bins, total, messages.studentCount(total))}
+    >
       {bins.map((bin) => (
         <div
           className={`askq-histogram__col ${bin.isCorrect ? 'askq-histogram__col--correct' : ''}`}
           key={bin.value}
-          title={`${bin.label}: ${bin.count} of ${total}`}
+          title={`${bin.label}: ${messages.countOf(bin.count, total)}`}
         >
           <span className="askq-histogram__count">{bin.count > 0 ? bin.count : ''}</span>
           <div className="askq-histogram__track">
@@ -99,10 +106,11 @@ export function Histogram({ bins, total }: { bins: HistogramBin[]; total: number
   );
 }
 
-function histogramLabel(bins: HistogramBin[], total: number): string {
+/** Screen-reader description: the bin counts, as a sentence. */
+function histogramLabel(bins: HistogramBin[], total: number, noun: string): string {
   const parts = bins
     .filter((bin) => bin.count > 0)
     .map((bin) => `${bin.label}: ${bin.count}`)
     .join(', ');
-  return `Distribution of ${total} answers. ${parts || 'No answers yet.'}`;
+  return `${total} ${noun}. ${parts}`;
 }

@@ -1,18 +1,16 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Results from '../../components/Results.tsx';
+import SiteText from '../../components/SiteText.tsx';
 import { lessonOne } from '../../questions';
 
 const groupId = 'lesson-1';
 const questionIds = Object.values(lessonOne).map((q) => `${q.groupId}/${q.questionId}`);
 ---
 
-<Base title="Teacher dashboard — Lesson one" noindex hideIdentity>
-  <h1>Lesson one — results</h1>
-  <p class="lede">
-    Updates every five seconds while this page is active. Polling pauses after a minute without
-    activity, or as soon as the tab goes to the background.
-  </p>
+<Base titleKey="dashboard.docTitle" noindex hideIdentity>
+  <SiteText client:load k="dashboard.title" as="h1" />
+  <SiteText client:load k="dashboard.lede" as="p" className="lede" />
 
   <Results client:load groupId={groupId} questionIds={questionIds} view="toggle" />
 </Base>

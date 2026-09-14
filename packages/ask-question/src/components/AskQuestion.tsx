@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { formatCorrectAnswer, gradeAnswer, isGraded } from '../grade';
-import { useQuestion, useStudent } from '../hooks';
+import { useMessages, useQuestion, useStudent } from '../hooks';
 import { randomId } from '../identity';
 import { submitAnswer } from '../store';
 import { getLocalAttemptCount, recordLocalAttempt } from '../submissions';
+import type { Messages } from '../i18n';
 import type { AnswerValue, Question } from '../types';
 import { Markdown } from './Markdown';
 import { NameGate } from './NameGate';
@@ -45,17 +46,17 @@ function hasAnswer(question: Question, value: AnswerValue | null): boolean {
   return Number.isFinite(value);
 }
 
-function validationMessage(question: Question, value: AnswerValue | null): string | null {
-  if (!hasAnswer(question, value)) return 'Choose or enter an answer first.';
+function validationMessage(
+  question: Question,
+  value: AnswerValue | null,
+  messages: Messages,
+): string | null {
+  if (!hasAnswer(question, value)) return messages.chooseAnswerFirst;
   if (question.type === 'long-text' && question.minLength) {
     const length = typeof value === 'string' ? value.trim().length : 0;
-    if (length < question.minLength) {
-      return `Please write at least ${question.minLength} characters.`;
-    }
+    if (length < question.minLength) return messages.minLength(question.minLength);
   }
-  if (question.type === 'number' && typeof value !== 'number') {
-    return 'Please enter a number.';
-  }
+  if (question.type === 'number' && typeof value !== 'number') return messages.enterNumber;
   return null;
 }
 
@@ -73,6 +74,7 @@ export function AskQuestion({
 }: AskQuestionProps) {
   const question = useQuestion(q, id);
   const { student, loaded } = useStudent();
+  const messages = useMessages();
   const uid = useId();
 
   const [value, setValue] = useState<AnswerValue | null>(() => emptyValue(question));
@@ -102,13 +104,13 @@ export function AskQuestion({
   }, [student, question, allowRetries]);
 
   const locked = !allowRetries && attempts > 0;
-  const correctAnswerText = useMemo(() => formatCorrectAnswer(question), [question]);
+  const correctAnswerText = useMemo(() => formatCorrectAnswer(question), [question, messages]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!student || phase === 'submitting' || locked) return;
 
-    const problem = validationMessage(question, value);
+    const problem = validationMessage(question, value, messages);
     if (problem) {
       setError(problem);
       return;
@@ -186,7 +188,7 @@ export function AskQuestion({
               className="askq-button askq-button--ghost"
               onClick={handleRetry}
             >
-              Try again
+              {messages.tryAgain}
             </button>
           ) : null
         ) : (
@@ -196,14 +198,12 @@ export function AskQuestion({
             className="askq-button"
             disabled={phase === 'submitting'}
           >
-            {phase === 'submitting' ? 'Submitting…' : 'Submit'}
+            {phase === 'submitting' ? messages.submitting : messages.submit}
           </button>
         )}
 
         {attempts > 0 ? (
-          <span className="askq-attempts">
-            {attempts} {attempts === 1 ? 'attempt' : 'attempts'}
-          </span>
+          <span className="askq-attempts">{messages.attemptCount(attempts)}</span>
         ) : null}
       </div>
 
@@ -214,10 +214,18 @@ export function AskQuestion({
           </p>
         ) : null}
 
-        {outcome ? <Feedback outcome={outcome} reveal={reveal} graded={graded} answer={correctAnswerText} /> : null}
+        {outcome ? (
+          <Feedback
+            outcome={outcome}
+            reveal={reveal}
+            graded={graded}
+            answer={correctAnswerText}
+            messages={messages}
+          />
+        ) : null}
 
         {locked && !outcome ? (
-          <p className="askq-note">You have already answered this question.</p>
+          <p className="askq-note">{messages.alreadyAnswered}</p>
         ) : null}
       </div>
     </form>
@@ -229,11 +237,13 @@ function Feedback({
   reveal,
   graded,
   answer,
+  messages,
 }: {
   outcome: Outcome;
   reveal: 'never' | 'if-correct' | 'always';
   graded: boolean;
   answer: string | null;
+  messages: Messages;
 }) {
   const showVerdict = reveal !== 'never' && graded && outcome.correct !== null;
   const showAnswer = reveal === 'always' && answer !== null;
@@ -243,22 +253,20 @@ function Feedback({
       {showVerdict ? (
         <p className={outcome.correct ? 'askq-verdict askq-verdict--ok' : 'askq-verdict askq-verdict--no'}>
           <span aria-hidden="true">{outcome.correct ? '✓' : '✗'}</span>{' '}
-          {outcome.correct ? 'Correct' : 'Not quite'}
+          {outcome.correct ? messages.correctVerdict : messages.incorrectVerdict}
         </p>
       ) : (
-        <p className="askq-note">Answer submitted.</p>
+        <p className="askq-note">{messages.answerSubmitted}</p>
       )}
 
       {showAnswer ? (
         <p className="askq-note">
-          Correct answer: <strong>{answer}</strong>
+          {messages.revealAnswerLabel} <strong>{answer}</strong>
         </p>
       ) : null}
 
       {outcome.queued ? (
-        <p className="askq-note askq-note--warn">
-          Saved on this device — it will be sent when the connection returns.
-        </p>
+        <p className="askq-note askq-note--warn">{messages.savedOffline}</p>
       ) : null}
     </div>
   );

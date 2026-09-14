@@ -436,6 +436,35 @@
   font-weight: 600;
 }
 
+/* ---------- language picker ---------- */
+
+.askq-langpicker {
+  display: inline-flex;
+  align-items: center;
+}
+
+.askq-langpicker.askq-toggle .askq-toggle__button {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 0.8125em;
+}
+
+.askq-langpicker__select {
+  font: inherit;
+  font-size: 0.875em;
+  color: var(--askq-text);
+  background: var(--askq-surface);
+  border: 1px solid var(--askq-border-strong);
+  border-radius: var(--askq-radius);
+  padding: 6px 10px;
+  min-height: 36px;
+}
+
+.askq-langpicker__select:focus-visible {
+  outline: 2px solid var(--askq-focus);
+  outline-offset: 2px;
+}
+
 /* ---------- results ---------- */
 
 .askq-answers__header {

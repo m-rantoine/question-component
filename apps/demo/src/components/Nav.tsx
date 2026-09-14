@@ -1,7 +1,12 @@
 import '../lib/askq-config';
-import { StudentBadge } from '@askq/react';
+import { LanguagePicker, StudentBadge } from '@askq/react';
 
-/** Header widget: who is answering, plus the log-out button that clears them. */
-export default function Nav() {
-  return <StudentBadge signedOutLabel="Not signed in" />;
+/** Header controls: interface language, plus who is answering and the log-out button. */
+export default function Nav({ showIdentity = true }: { showIdentity?: boolean }) {
+  return (
+    <div className="site-header__controls">
+      <LanguagePicker />
+      {showIdentity ? <StudentBadge /> : null}
+    </div>
+  );
 }

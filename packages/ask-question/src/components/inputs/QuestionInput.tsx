@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useMessages } from '../../hooks';
 import type { AnswerValue, Question } from '../../types';
 
 export interface QuestionInputProps {
@@ -44,6 +45,8 @@ export function QuestionInput({
   onChange,
   disabled,
 }: QuestionInputProps) {
+  const messages = useMessages();
+
   switch (question.type) {
     case 'short-text':
       return (
@@ -283,9 +286,7 @@ export function QuestionInput({
                     onChange={() => onChange(star)}
                   />
                   <span aria-hidden="true">{filled ? '★' : '☆'}</span>
-                  <span className="askq-sr-only">
-                    {star} {star === 1 ? 'star' : 'stars'}
-                  </span>
+                  <span className="askq-sr-only">{messages.starsLabel(star)}</span>
                 </label>
               );
             })}

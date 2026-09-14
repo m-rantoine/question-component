@@ -1,31 +1,39 @@
 ---
 import Nav from '../components/Nav.tsx';
 import SetupNotice from '../components/SetupNotice.tsx';
+import SiteText from '../components/SiteText.tsx';
+import DocumentTitle from '../components/DocumentTitle.tsx';
+import type { SiteKey } from '../lib/site-text';
 import '@askq/react/styles.css';
 import '../styles/site.css';
 
 interface Props {
-  title: string;
+  /** Key for the document title; kept in step with the language picker. */
+  titleKey: SiteKey;
   noindex?: boolean;
   /** Hides the student badge, which means nothing on the teacher dashboard. */
   hideIdentity?: boolean;
 }
 
-const { title, noindex = false, hideIdentity = false } = Astro.props;
+const { titleKey, noindex = false, hideIdentity = false } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<!-- Server-rendered in the default locale; the i18n store corrects it on hydration. -->
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>Pose une question</title>
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <DocumentTitle client:load k={titleKey} />
   </head>
   <body>
     <header class="site-header">
-      <a class="site-header__brand" href="/">Ask a Question</a>
-      {!hideIdentity && <Nav client:load />}
+      <a class="site-header__brand" href="/">
+        <SiteText client:load k="site.brand" />
+      </a>
+      <Nav client:load showIdentity={!hideIdentity} />
     </header>
 
     <main class="site-main">
@@ -34,7 +42,7 @@ const { title, noindex = false, hideIdentity = false } = Astro.props;
     </main>
 
     <footer class="site-footer">
-      <p>Answers are stored one row per attempt — a retry never overwrites an earlier answer.</p>
+      <SiteText client:load k="site.footer" as="p" />
     </footer>
   </body>
 </html>
