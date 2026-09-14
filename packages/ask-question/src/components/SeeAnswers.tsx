@@ -24,10 +24,19 @@ export interface SeeAnswersProps {
   className?: string;
   /** Hide the question text, e.g. when the dashboard already prints it. */
   hideQuestion?: boolean;
+  /** Turns the question title into a link, e.g. to this question's own page. */
+  titleHref?: string;
 }
 
 /** Teacher-facing results for one question. Reads from the shared group poller. */
-export function SeeAnswers({ q, id, view = 'summary', className, hideQuestion }: SeeAnswersProps) {
+export function SeeAnswers({
+  q,
+  id,
+  view = 'summary',
+  className,
+  hideQuestion,
+  titleHref,
+}: SeeAnswersProps) {
   const question = useQuestion(q, id);
   const { locale, messages } = useLocale();
   const summary = useQuestionSummary(question);
@@ -43,7 +52,13 @@ export function SeeAnswers({ q, id, view = 'summary', className, hideQuestion }:
       <header className="askq-answers__header">
         {hideQuestion ? null : (
           <h3 className="askq-answers__title">
-            <Markdown source={question.question} />
+            {titleHref ? (
+              <a className="askq-answers__link" href={titleHref}>
+                <Markdown source={question.question} />
+              </a>
+            ) : (
+              <Markdown source={question.question} />
+            )}
           </h3>
         )}
         {view === 'toggle' ? (

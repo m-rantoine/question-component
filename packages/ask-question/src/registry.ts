@@ -41,6 +41,11 @@ export function tryResolveQuestion(id: string): Question | undefined {
   return registry.get(id);
 }
 
+/** Every group id that has registered questions, in first-seen order. */
+export function registeredGroupIds(): string[] {
+  return [...groups.keys()];
+}
+
 /** Every registered question in a group, in declaration order. */
 export function questionsInGroup(groupId: string): Question[] {
   return [...(groups.get(groupId) ?? [])];

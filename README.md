@@ -49,7 +49,9 @@ Pages:
 | --- | --- |
 | `/` | Index |
 | `/lessons/lesson-one` | Nine questions, one of each type |
-| `/secretkey_abc123/teacher-dashboard` | Results for `lesson-1` |
+| `/secretkey_abc123/teacher-dashboard` | Results for every group |
+| `/secretkey_abc123/teacher-dashboard/lesson-1` | Results for one group |
+| `/secretkey_abc123/teacher-dashboard/lesson-1/q3` | One question, with previous / next |
 
 ## Setting up Supabase
 
@@ -220,7 +222,12 @@ slips through cannot displace the first answer.
 Notes:
 
 - **Choices are matched by text, not index**, so reordering `options` never changes what
-  a stored answer means.
+  a stored answer means. Editing an option's *text*, however, orphans every answer already
+  stored against it — they stay in the per-student table but stop counting in the bars.
+- **`groupId` and `questionId` must match `[A-Za-z0-9_.-]{1,64}`**, checked when the bank
+  is defined. They appear in dashboard URLs and in a database column with the same
+  constraint, so a space or a slash would otherwise fail at submit time, in front of a
+  class.
 - **Short-text grading** trims, collapses runs of whitespace, and lower-cases unless
   `caseSensitive: true`. For anything a variant list cannot express, pass
   `match: (raw) => boolean`.
@@ -314,6 +321,33 @@ questions cost one request every five seconds, not nine.
 ```
 
 ## The teacher dashboard
+
+Three routes, all under the same unlisted path segment:
+
+| URL | Shows |
+| --- | --- |
+| `/secretkey_abc123/teacher-dashboard` | Every group, each as its own section |
+| `/secretkey_abc123/teacher-dashboard/<group-id>` | Every question in one group |
+| `/secretkey_abc123/teacher-dashboard/<group-id>/<question-id>` | One question, with previous / next |
+
+Every page is generated at build time from the question bank, so an unknown group
+or question id is a 404 rather than an empty page. On the group page each question
+title links to its own page; on a question page **Previous** and **Next** move
+through the group **in the order the bank declares**, not alphabetically, and are
+real links — so they work on middle-click, can be bookmarked, and survive a failed
+hydration. The controls at the ends of a group render disabled rather than wrapping
+around, and appear both above and below the results so a long question needs no
+scrolling back.
+
+The URL shape lives in one place, `apps/demo/src/lib/dashboard-links.ts`. Change the
+secret segment there and every link follows.
+
+Each page holds **one poller per group**, so a group of twenty questions costs one
+request every five seconds, not twenty. The single-question page still polls the whole
+group — the answers are already in one cache, and it means moving between questions is
+instant.
+
+### Views
 
 `summary` shows, per type:
 

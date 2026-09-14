@@ -17,6 +17,7 @@ export { defineGroup, type QuestionInput as QuestionDefinition } from './defineG
 export {
   questionKey,
   questionsInGroup,
+  registeredGroupIds,
   registerQuestion,
   resolveQuestion,
   tryResolveQuestion,

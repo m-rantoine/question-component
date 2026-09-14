@@ -10,12 +10,14 @@ import '../styles/site.css';
 interface Props {
   /** Key for the document title; kept in step with the language picker. */
   titleKey: SiteKey;
+  /** Appended to the title after an em dash. Ids, so not translated. */
+  titleSuffix?: string;
   noindex?: boolean;
   /** Hides the student badge, which means nothing on the teacher dashboard. */
   hideIdentity?: boolean;
 }
 
-const { titleKey, noindex = false, hideIdentity = false } = Astro.props;
+const { titleKey, titleSuffix, noindex = false, hideIdentity = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -26,7 +28,7 @@ const { titleKey, noindex = false, hideIdentity = false } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pose une question</title>
     {noindex && <meta name="robots" content="noindex, nofollow" />}
-    <DocumentTitle client:load k={titleKey} />
+    <DocumentTitle client:load k={titleKey} suffix={titleSuffix} />
   </head>
   <body>
     <header class="site-header">

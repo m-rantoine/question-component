@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defineGroup } from '../src/defineGroup';
-import { resolveQuestion } from '../src/registry';
+import { questionsInGroup, registeredGroupIds, resolveQuestion } from '../src/registry';
 
 describe('defineGroup', () => {
   it('injects groupId and questionId from the keys', () => {
@@ -39,6 +39,30 @@ describe('defineGroup', () => {
         q1: { type: 'scale', question: 'How many?', config: { min: 10, max: 2 } },
       }),
     ).toThrow(/greater than min/);
+  });
+
+  it('rejects ids that would break a URL or the database column', () => {
+    expect(() =>
+      defineGroup('lesson 1', { q1: { type: 'long-text', question: 'x' } }),
+    ).toThrow(/Invalid groupId/);
+    expect(() =>
+      defineGroup('lesson-1', { 'q/1': { type: 'long-text', question: 'x' } }),
+    ).toThrow(/Invalid questionId/);
+    expect(() => defineGroup('', { q1: { type: 'long-text', question: 'x' } })).toThrow(
+      /Invalid groupId/,
+    );
+  });
+
+  it('enumerates groups and their questions in declaration order', () => {
+    defineGroup('lesson-1', {
+      q1: { type: 'long-text', question: 'One' },
+      q2: { type: 'long-text', question: 'Two' },
+    });
+    defineGroup('lesson-2', { q1: { type: 'long-text', question: 'Three' } });
+
+    expect(registeredGroupIds()).toEqual(['lesson-1', 'lesson-2']);
+    expect(questionsInGroup('lesson-1').map((q) => q.questionId)).toEqual(['q1', 'q2']);
+    expect(questionsInGroup('nope')).toEqual([]);
   });
 
   it('reports an unknown question id with the ids it does know', () => {

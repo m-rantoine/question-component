@@ -1,0 +1,26 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { questionsInGroup, registeredGroupIds } from '@askq/react';
+import Base from '../../../../layouts/Base.astro';
+import Results from '../../../../components/Results.tsx';
+import GroupHeading from '../../../../components/GroupHeading.tsx';
+import SiteText from '../../../../components/SiteText.tsx';
+import { DASHBOARD_ROOT } from '../../../../lib/dashboard-links';
+import '../../../../questions';
+
+// The question bank is known at build time, so every group gets a static page.
+export const getStaticPaths = (() =>
+  registeredGroupIds().map((groupId) => ({ params: { groupId } }))) satisfies GetStaticPaths;
+
+const { groupId } = Astro.params;
+const questionIds = questionsInGroup(groupId!).map((q) => `${q.groupId}/${q.questionId}`);
+---
+
+<Base titleKey="dashboard.docTitle" titleSuffix={groupId} noindex hideIdentity>
+  <p class="crumb"><a href={DASHBOARD_ROOT}><SiteText client:load k="dashboard.allGroups" /></a></p>
+
+  <GroupHeading client:load groupId={groupId!} questionCount={questionIds.length} />
+  <SiteText client:load k="dashboard.lede" as="p" className="lede" />
+
+  <Results client:load groupId={groupId!} questionIds={questionIds} view="toggle" linkQuestions />
+</Base>

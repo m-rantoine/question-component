@@ -480,6 +480,16 @@
   font-size: 1.05rem;
 }
 
+.askq-answers__link {
+  color: inherit;
+  text-decoration-color: var(--askq-border-strong);
+  text-underline-offset: 3px;
+}
+
+.askq-answers__link:hover {
+  text-decoration-color: var(--askq-accent);
+}
+
 .askq-answers__stats {
   margin: 8px 0 14px;
   color: var(--askq-text-secondary);
