@@ -112,16 +112,35 @@ If the dashboard stays empty but rows exist in the table, the server is missing
 1. Push this repository to GitHub.
 2. In Vercel, **Add New** → **Project**, and import the repository.
 3. Set the **Root Directory** to `apps/demo`.
-4. Vercel detects Astro. Leave the build command as the default (`astro build`); the
-   workspace install builds the library first.
-5. Under **Environment Variables**, add all three values from step 3 above, for every
-   environment you intend to use (Production, Preview, Development).
+4. Leave the build command alone. `apps/demo/vercel.json` sets it to
+   `pnpm --filter @askq/react build && astro build`, because the demo imports the
+   library's build output and `pnpm install` does not build a workspace dependency on
+   its own.
+5. Under **Settings** → **Environment Variables**, add all three values from step 3
+   above, for Production, Preview and Development.
 6. Deploy.
 
 The site builds as static HTML plus one serverless function for `/api/answers`.
 
-Redeploy after changing environment variables — `PUBLIC_` values are baked into the
-client bundle at build time.
+> Redeploy after adding or changing environment variables. `PUBLIC_` values are baked
+> into the client bundle at build time, so a running deployment will not pick them up
+> until it is rebuilt.
+
+Without the environment variables the deployment still builds and serves: the client
+falls back to in-memory demo mode and shows a banner, and `/api/answers` returns a 503
+explaining what is missing.
+
+### Never commit the keys
+
+`.gitignore` covers `.env`, and nothing in this repository contains a credential.
+The Supabase URL and publishable key are safe in a browser bundle but still belong in
+Vercel's environment variables rather than in a committed file, so the project can be
+pointed at a different Supabase instance without a code change.
+
+Note that GitHub repository secrets are **not** a substitute here: Vercel's Git
+integration builds on Vercel's own infrastructure and reads Vercel environment
+variables. GitHub secrets are only visible to GitHub Actions workflows, of which this
+repository has none.
 
 ## Writing questions
 

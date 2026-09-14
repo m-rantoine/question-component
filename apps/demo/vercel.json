@@ -1,4 +1,6 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @askq/react build && astro build",
   "headers": [
     {
       "source": "/secretkey_abc123/(.*)",
