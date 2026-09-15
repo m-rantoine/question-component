@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import TeacherSignIn from '../../components/TeacherSignIn.tsx';
+import { isTeacherAuthConfigured } from '../../lib/teacher-auth';
+
+export const prerender = false;
+
+const configured = isTeacherAuthConfigured();
+---
+
+<Base titleKey="dashboard.docTitle" noindex hideIdentity>
+  {
+    configured ? (
+      <TeacherSignIn client:load />
+    ) : (
+      <p class="lede">
+        Teacher sign-in is not configured. Set ASKQ_TEACHER_USER, ASKQ_TEACHER_PASSWORD and
+        ASKQ_AUTH_SECRET in the server environment.
+      </p>
+    )
+  }
+</Base>

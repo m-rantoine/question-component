@@ -1,18 +1,16 @@
 ---
-import type { GetStaticPaths } from 'astro';
-import { questionsInGroup, registeredGroupIds } from '@askq/react';
+import { isTeacherAuthConfigured } from '../../../../lib/teacher-auth';
 import Base from '../../../../layouts/Base.astro';
 import Dashboard from '../../../../components/Dashboard.tsx';
 import '../../../../questions';
 
-export const getStaticPaths = (() =>
-  registeredGroupIds().flatMap((groupId) =>
-    questionsInGroup(groupId).map((question) => ({
-      params: { groupId, questionId: question.questionId },
-    })),
-  )) satisfies GetStaticPaths;
-
 const { groupId, questionId } = Astro.params;
+
+// Rendered on demand so the middleware guard runs; a prerendered page is a
+// static file the CDN serves without ever asking the server.
+export const prerender = false;
+
+const authConfigured = isTeacherAuthConfigured();
 ---
 
 <Base
@@ -21,5 +19,5 @@ const { groupId, questionId } = Astro.params;
   noindex
   hideIdentity
 >
-  <Dashboard client:load show="question" groupId={groupId!} questionId={questionId!} />
+  <Dashboard client:load signOut={authConfigured} show="question" groupId={groupId!} questionId={questionId!} />
 </Base>

@@ -15,6 +15,14 @@ function linkTo(target: DashboardTarget): string {
   return questionHref(target.groupId, target.questionId);
 }
 
-export default function Dashboard(props: AnswerDashboardProps) {
-  return <AnswerDashboard {...props} linkTo={linkTo} sessionPicker />;
+export default function Dashboard(props: AnswerDashboardProps & { signOut?: boolean }) {
+  const { signOut, ...rest } = props;
+  return (
+    <AnswerDashboard
+      {...rest}
+      linkTo={linkTo}
+      sessionPicker
+      signOutHref={signOut ? '/api/teacher/logout' : undefined}
+    />
+  );
 }

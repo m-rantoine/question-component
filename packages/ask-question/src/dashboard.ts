@@ -14,6 +14,7 @@ export {
   type DashboardTarget,
 } from './components/AnswerDashboard';
 export { SeeAnswers, type AnswersView, type SeeAnswersProps } from './components/SeeAnswers';
+export { TeacherLogin, type TeacherLoginProps } from './components/TeacherLogin';
 export { AnswersProvider, type AnswersProviderProps } from './providers';
 
 export {

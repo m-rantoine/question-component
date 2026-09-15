@@ -947,6 +947,40 @@ button.askq-answers__link {
   cursor: pointer;
 }
 
+.askq-login {
+  display: grid;
+  gap: 8px;
+  max-width: 22rem;
+  padding: 20px;
+  border: 1px solid var(--askq-border);
+  border-radius: var(--askq-radius);
+  background: var(--askq-surface-raised);
+  color: var(--askq-text);
+}
+
+.askq-login__title {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.askq-login .askq-button {
+  margin-top: 8px;
+  justify-self: start;
+}
+
+.askq-dashboard__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.askq-dashboard__signout {
+  font-size: 0.9375rem;
+  color: var(--askq-accent);
+}
+
 @media (max-width: 480px) {
   .askq,
   .askq-answers {

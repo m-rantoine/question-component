@@ -37,6 +37,8 @@ export interface AnswerDashboardCommon {
   csv?: boolean;
   /** Supply to render navigation as links instead of buttons. */
   linkTo?: (target: DashboardTarget) => string;
+  /** Renders a sign-out link — the route running `createTeacherAuth().logout`. */
+  signOutHref?: string;
   className?: string;
 }
 
@@ -79,6 +81,7 @@ export function AnswerDashboard(props: AnswerDashboardProps) {
     sessionPicker = false,
     csv = true,
     linkTo,
+    signOutHref,
     className,
   } = props;
   const { messages } = useLocale();
@@ -107,14 +110,24 @@ export function AnswerDashboard(props: AnswerDashboardProps) {
     [route],
   );
 
-  const picker = sessionPicker ? (
-    <SessionPicker
-      groupIds={groupIds}
-      value={session}
-      onChange={setSession}
-      messages={messages}
-    />
-  ) : null;
+  const toolbar =
+    sessionPicker || signOutHref ? (
+      <div className="askq-dashboard__toolbar">
+        {sessionPicker ? (
+          <SessionPicker
+            groupIds={groupIds}
+            value={session}
+            onChange={setSession}
+            messages={messages}
+          />
+        ) : null}
+        {signOutHref ? (
+          <a className="askq-dashboard__signout" href={signOutHref}>
+            {messages.logOut}
+          </a>
+        ) : null}
+      </div>
+    ) : null;
 
   const navigate = linkTo ? undefined : setNav;
 
@@ -128,11 +141,17 @@ export function AnswerDashboard(props: AnswerDashboardProps) {
           csv={csv}
           linkTo={linkTo}
           navigate={navigate}
-          toolbar={picker}
+          toolbar={toolbar}
           messages={messages}
         />
       ) : route.kind === 'groupPicker' ? (
-        <GroupPicker groupIds={groupIds} linkTo={linkTo} navigate={navigate} messages={messages} />
+        <GroupPicker
+          groupIds={groupIds}
+          linkTo={linkTo}
+          navigate={navigate}
+          toolbar={toolbar}
+          messages={messages}
+        />
       ) : route.kind === 'group' ? (
         <GroupView
           groupId={route.groupId}
@@ -141,7 +160,7 @@ export function AnswerDashboard(props: AnswerDashboardProps) {
           csv={csv}
           linkTo={linkTo}
           navigate={navigate}
-          toolbar={picker}
+          toolbar={toolbar}
           messages={messages}
         />
       ) : (
@@ -154,7 +173,7 @@ export function AnswerDashboard(props: AnswerDashboardProps) {
           csv={csv}
           linkTo={linkTo}
           navigate={navigate}
-          toolbar={picker}
+          toolbar={toolbar}
           messages={messages}
         />
       )}
@@ -197,16 +216,19 @@ function GroupPicker({
   groupIds,
   linkTo,
   navigate,
+  toolbar,
   messages,
 }: {
   groupIds: readonly string[];
   linkTo?: (target: DashboardTarget) => string;
   navigate?: (route: Route) => void;
+  toolbar: React.ReactNode;
   messages: Messages;
 }) {
   if (groupIds.length === 0) return <p className="askq-dashboard__empty">{messages.noGroups}</p>;
   return (
     <nav className="askq-dashboard__picker" aria-label={messages.chooseGroup}>
+      {toolbar}
       <h2 className="askq-dashboard__picker-title">{messages.chooseGroup}</h2>
       <ul className="askq-dashboard__picker-list">
         {groupIds.map((groupId) => {

@@ -97,6 +97,14 @@ export interface Messages {
   noSession: string;
   downloadCsv: string;
 
+  // Teacher sign-in
+  teacherSignIn: string;
+  usernameLabel: string;
+  passwordLabel: string;
+  signIn: string;
+  signInFailed: string;
+  signInThrottled: string;
+
   // Answer formatting
   blankAnswer: string;
   nothingSelected: string;
@@ -172,6 +180,13 @@ const en: Messages = {
   noSession: 'No session',
   downloadCsv: 'Download CSV',
 
+  teacherSignIn: 'Teacher sign-in',
+  usernameLabel: 'Username',
+  passwordLabel: 'Password',
+  signIn: 'Sign in',
+  signInFailed: 'That username and password did not match.',
+  signInThrottled: 'Too many attempts. Wait a few minutes and try again.',
+
   blankAnswer: '(blank)',
   nothingSelected: '(nothing selected)',
   starsLabel: (n) => (n === 1 ? '1 star' : `${n} stars`),
@@ -246,6 +261,13 @@ const fr: Messages = {
   allSessions: 'Toutes les séances',
   noSession: 'Aucune séance',
   downloadCsv: 'Télécharger le CSV',
+
+  teacherSignIn: 'Connexion enseignant',
+  usernameLabel: 'Nom d’utilisateur',
+  passwordLabel: 'Mot de passe',
+  signIn: 'Se connecter',
+  signInFailed: 'Ce nom d’utilisateur et ce mot de passe ne correspondent pas.',
+  signInThrottled: 'Trop de tentatives. Attends quelques minutes et réessaie.',
 
   blankAnswer: '(vide)',
   nothingSelected: '(rien de sélectionné)',

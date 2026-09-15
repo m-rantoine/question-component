@@ -107,4 +107,10 @@ export function createAnswersHandler(options: AnswersHandlerOptions = {}) {
   };
 }
 
+export {
+  createTeacherAuth,
+  type TeacherAuth,
+  type TeacherAuthOptions,
+} from './auth';
+
 export type { AnswerRow } from './types';
