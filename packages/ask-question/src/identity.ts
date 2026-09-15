@@ -1,3 +1,4 @@
+import { globalState } from './globalState';
 import { getMessages } from './i18n';
 
 export interface Student {
@@ -32,30 +33,35 @@ function readStorage(): Student | null {
   }
 }
 
-let current: Student | null = readStorage();
-let loaded = typeof localStorage !== 'undefined';
-const listeners = new Set<(student: Student | null) => void>();
+// Pinned to globalThis: see globalState.ts for why module scope is not enough.
+const state = globalState('__askq_identity_v1', () => ({
+  current: readStorage(),
+  loaded: typeof localStorage !== 'undefined',
+  listeners: new Set<(student: Student | null) => void>(),
+  channel: null as BroadcastChannel | null,
+  installed: false,
+}));
 
 function emit(): void {
-  for (const listener of [...listeners]) listener(current);
+  for (const listener of [...state.listeners]) listener(state.current);
 }
 
-let channel: BroadcastChannel | null = null;
 function ensureChannel(): BroadcastChannel | null {
-  if (channel || typeof BroadcastChannel === 'undefined') return channel;
-  channel = new BroadcastChannel(CHANNEL_NAME);
-  channel.onmessage = () => {
-    current = readStorage();
+  if (state.channel || typeof BroadcastChannel === 'undefined') return state.channel;
+  state.channel = new BroadcastChannel(CHANNEL_NAME);
+  state.channel.onmessage = () => {
+    state.current = readStorage();
     emit();
   };
-  return channel;
+  return state.channel;
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !state.installed) {
+  state.installed = true;
   // Another tab wrote the key.
   window.addEventListener('storage', (event) => {
     if (event.key !== null && event.key !== STORAGE_KEY) return;
-    current = readStorage();
+    state.current = readStorage();
     emit();
   });
   ensureChannel();
@@ -72,16 +78,16 @@ function persist(student: Student | null): void {
 }
 
 export function getStudent(): Student | null {
-  if (!loaded && typeof localStorage !== 'undefined') {
-    current = readStorage();
-    loaded = true;
+  if (!state.loaded && typeof localStorage !== 'undefined') {
+    state.current = readStorage();
+    state.loaded = true;
   }
-  return current;
+  return state.current;
 }
 
 /** True once localStorage has been consulted — used to avoid a hydration flash. */
 export function isIdentityLoaded(): boolean {
-  return loaded;
+  return state.loaded;
 }
 
 export function normaliseName(name: string): string {
@@ -103,8 +109,8 @@ export function signIn(rawName: string): Student {
     throw new Error(getMessages().nameTooShort(MIN_NAME_LENGTH));
   }
   const student: Student = { id: randomId(), name, savedAt: Date.now() };
-  current = student;
-  loaded = true;
+  state.current = student;
+  state.loaded = true;
   persist(student);
   emit();
   ensureChannel()?.postMessage({ type: 'identity' });
@@ -112,24 +118,24 @@ export function signIn(rawName: string): Student {
 }
 
 export function signOut(): void {
-  current = null;
-  loaded = true;
+  state.current = null;
+  state.loaded = true;
   persist(null);
   emit();
   ensureChannel()?.postMessage({ type: 'identity' });
 }
 
 export function subscribeToIdentity(listener: (student: Student | null) => void): () => void {
-  listeners.add(listener);
+  state.listeners.add(listener);
   return () => {
-    listeners.delete(listener);
+    state.listeners.delete(listener);
   };
 }
 
 /** Test helper. */
 export function resetIdentity(): void {
-  current = null;
-  loaded = typeof localStorage !== 'undefined';
+  state.current = null;
+  state.loaded = typeof localStorage !== 'undefined';
   persist(null);
   emit();
 }

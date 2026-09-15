@@ -1,3 +1,4 @@
+import { globalState } from './globalState';
 import type { Question } from './types';
 
 /**
@@ -5,8 +6,11 @@ import type { Question } from './types';
  * can be handed a plain string prop. Astro serialises island props as JSON, so
  * passing the question object itself only works from inside React.
  */
-const registry = new Map<string, Question>();
-const groups = new Map<string, Question[]>();
+const state = globalState('__askq_registry_v1', () => ({
+  registry: new Map<string, Question>(),
+  groups: new Map<string, Question[]>(),
+}));
+const { registry, groups } = state;
 
 export function questionKey(groupId: string, questionId: string): string {
   return `${groupId}/${questionId}`;
@@ -32,7 +36,12 @@ export function resolveQuestion(id: string): Question {
   const question = registry.get(id);
   if (!question) {
     const known = [...registry.keys()].sort().join(', ') || '(none registered)';
-    throw new Error(`[askq] Unknown question id "${id}". Registered ids: ${known}`);
+    throw new Error(
+      `[askq] Unknown question id "${id}". Registered ids: ${known}. ` +
+        `If this is a React Server Components app, the usual cause is importing the question ` +
+        `bank only on the server — it has to reach the browser bundle for id lookup to work. ` +
+        `Import it from a "use client" module, or pass the question object as q={...} instead.`,
+    );
   }
   return question;
 }

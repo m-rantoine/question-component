@@ -1,17 +1,13 @@
+"use client";
+
 export { AskQuestion, type AskQuestionProps } from './components/AskQuestion';
-export { SeeAnswers, type AnswersView, type SeeAnswersProps } from './components/SeeAnswers';
 export { StudentBadge, type StudentBadgeProps } from './components/StudentBadge';
 export { LanguagePicker, type LanguagePickerProps } from './components/LanguagePicker';
 export { NameGate, type NameGateProps } from './components/NameGate';
 export { IdleBanner } from './components/IdleBanner';
 export { Markdown, type MarkdownProps } from './components/Markdown';
 
-export {
-  QuestionProvider,
-  AnswersProvider,
-  type QuestionProviderProps,
-  type AnswersProviderProps,
-} from './providers';
+export { QuestionProvider, type QuestionProviderProps } from './providers';
 
 export { defineGroup, type QuestionInput as QuestionDefinition } from './defineGroup';
 export {
@@ -62,15 +58,7 @@ export {
   type Messages,
 } from './i18n';
 
-export {
-  useGroupAnswers,
-  useGroupSubscription,
-  useIdleState,
-  useQuestion,
-  useQuestionSummary,
-  useStudent,
-  type IdleControls,
-} from './hooks';
+export { useIdleState, useQuestion, useStudent, type IdleControls } from './hooks';
 
 export {
   installIdleWatcher,
@@ -92,19 +80,6 @@ export {
 export { outboxSize, clearOutbox } from './outbox';
 export { clearLocalAttempts, getLocalAttemptCount } from './submissions';
 
-export {
-  attemptStats,
-  groupByStudent,
-  summariseNumeric,
-  summariseQuestion,
-  tallyOptions,
-  tallyText,
-  type AttemptStats,
-  type NumericSummary,
-  type QuestionSummary,
-  type StudentResult,
-  type Tally,
-} from './aggregate';
 
 export {
   formatAnswer,

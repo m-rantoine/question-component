@@ -9,6 +9,8 @@
  * localising option text would break stored answers.
  */
 
+import { globalState } from './globalState';
+
 export type Locale = 'fr' | 'en';
 
 export const LOCALES: readonly Locale[] = ['fr', 'en'];
@@ -231,34 +233,39 @@ function readStorage(): Locale | null {
   }
 }
 
-let current: Locale = readStorage() ?? DEFAULT_LOCALE;
-const listeners = new Set<(locale: Locale) => void>();
+// Pinned to globalThis: see globalState.ts for why module scope is not enough.
+const state = globalState('__askq_locale_v1', () => ({
+  current: readStorage() ?? DEFAULT_LOCALE,
+  listeners: new Set<(locale: Locale) => void>(),
+  channel: null as BroadcastChannel | null,
+  installed: false,
+}));
 
 function emit(): void {
-  for (const listener of [...listeners]) listener(current);
+  for (const listener of [...state.listeners]) listener(state.current);
 }
 
 function syncDocumentLang(): void {
   if (typeof document === 'undefined') return;
-  document.documentElement.lang = current;
+  document.documentElement.lang = state.current;
 }
 
-let channel: BroadcastChannel | null = null;
 function ensureChannel(): BroadcastChannel | null {
-  if (channel || typeof BroadcastChannel === 'undefined') return channel;
-  channel = new BroadcastChannel(CHANNEL_NAME);
-  channel.onmessage = () => {
-    current = readStorage() ?? DEFAULT_LOCALE;
+  if (state.channel || typeof BroadcastChannel === 'undefined') return state.channel;
+  state.channel = new BroadcastChannel(CHANNEL_NAME);
+  state.channel.onmessage = () => {
+    state.current = readStorage() ?? DEFAULT_LOCALE;
     syncDocumentLang();
     emit();
   };
-  return channel;
+  return state.channel;
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !state.installed) {
+  state.installed = true;
   window.addEventListener('storage', (event) => {
     if (event.key !== null && event.key !== STORAGE_KEY) return;
-    current = readStorage() ?? DEFAULT_LOCALE;
+    state.current = readStorage() ?? DEFAULT_LOCALE;
     syncDocumentLang();
     emit();
   });
@@ -267,12 +274,12 @@ if (typeof window !== 'undefined') {
 }
 
 export function getLocale(): Locale {
-  return current;
+  return state.current;
 }
 
 export function setLocale(locale: Locale): void {
-  if (!isLocale(locale) || locale === current) return;
-  current = locale;
+  if (!isLocale(locale) || locale === state.current) return;
+  state.current = locale;
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, locale);
@@ -286,20 +293,20 @@ export function setLocale(locale: Locale): void {
 }
 
 export function subscribeToLocale(listener: (locale: Locale) => void): () => void {
-  listeners.add(listener);
+  state.listeners.add(listener);
   return () => {
-    listeners.delete(listener);
+    state.listeners.delete(listener);
   };
 }
 
 /** Messages for a specific locale, or the active one. */
-export function getMessages(locale: Locale = current): Messages {
+export function getMessages(locale: Locale = state.current): Messages {
   return CATALOGUES[locale];
 }
 
 /** Test helper. */
 export function resetLocale(): void {
-  current = DEFAULT_LOCALE;
+  state.current = DEFAULT_LOCALE;
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -315,19 +322,19 @@ export function resetLocale(): void {
 // ---------------------------------------------------------------------------
 
 /** French writes 1,5 where English writes 1.5. */
-export function formatNumber(value: number, locale: Locale = current): string {
+export function formatNumber(value: number, locale: Locale = state.current): string {
   return new Intl.NumberFormat(LOCALE_TAGS[locale], { maximumFractionDigits: 2 }).format(value);
 }
 
 /** French writes "50 %" with a non-breaking space; English writes "50%". */
-export function formatPercent(fraction: number, locale: Locale = current): string {
+export function formatPercent(fraction: number, locale: Locale = state.current): string {
   return new Intl.NumberFormat(LOCALE_TAGS[locale], {
     style: 'percent',
     maximumFractionDigits: 0,
   }).format(fraction);
 }
 
-export function formatTime(iso: string, locale: Locale = current): string {
+export function formatTime(iso: string, locale: Locale = state.current): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleTimeString(LOCALE_TAGS[locale], { hour: 'numeric', minute: '2-digit' });

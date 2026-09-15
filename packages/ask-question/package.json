@@ -1,11 +1,17 @@
 {
   "name": "@askq/react",
   "version": "0.1.0",
-  "description": "React components for asking students questions and showing the results on a teacher dashboard.",
+  "description": "React components for asking students questions and showing a teacher what the class answered.",
   "type": "module",
   "license": "MIT",
-  "sideEffects": ["*.css"],
-  "files": ["dist"],
+  "sideEffects": true,
+  "files": [
+    "dist",
+    "bin",
+    "supabase",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,11 +21,23 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./styles.css": "./dist/styles.css"
+    "./dashboard": {
+      "types": "./dist/dashboard.d.ts",
+      "import": "./dist/dashboard.js",
+      "require": "./dist/dashboard.cjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "require": "./dist/server.cjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/check-build.mjs",
     "dev": "tsup --watch",
+    "prepare": "node scripts/prepare.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -40,5 +58,19 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-rantoine/question-component.git",
+    "directory": "packages/ask-question"
+  },
+  "keywords": [
+    "react",
+    "astro",
+    "nextjs",
+    "education",
+    "quiz",
+    "formative-assessment",
+    "supabase"
+  ]
 }

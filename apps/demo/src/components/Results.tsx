@@ -1,5 +1,5 @@
 import '../lib/askq-config';
-import { AnswersProvider, SeeAnswers, type AnswersView } from '@askq/react';
+import { AnswersProvider, SeeAnswers, type AnswersView } from '@askq/react/dashboard';
 import { questionHref } from '../lib/dashboard-links';
 
 export interface ResultsProps {
