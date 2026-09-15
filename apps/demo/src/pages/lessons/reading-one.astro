@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import Question from '../../components/Question.tsx';
+import '../../questions';
+
+// Questions scattered through a document, rather than gathered into a
+// questionnaire. Nothing about the component changes: each one is still its own
+// island, its own submission and its own row, and they land in one group so the
+// dashboard shows the whole reading on a single page.
+---
+
+<Base titleKey="reading.docTitle">
+  <h1>Le canal Rideau</h1>
+
+  <p>
+    Le canal Rideau relie Ottawa au lac Ontario, à Kingston. Il a ouvert en 1832, six ans
+    après le début des travaux, sous la direction du colonel John By. À l’époque, le
+    Haut-Canada craignait une nouvelle guerre avec les États-Unis : le fleuve
+    Saint-Laurent longe la frontière américaine sur des centaines de kilomètres, et un
+    convoi militaire y aurait été une cible facile.
+  </p>
+
+  <Question client:load id="reading-1/q1" />
+
+  <p>
+    Le canal offrait une route de rechange, entièrement à l’intérieur des terres. La
+    guerre redoutée n’a jamais eu lieu, et le canal n’a donc jamais servi à ce pour quoi
+    il avait été creusé. Il est devenu une voie commerciale, puis, bien plus tard, un
+    lieu de loisir.
+  </p>
+
+  <Question client:load id="reading-1/q2" />
+
+  <p>
+    L’hiver, la section qui traverse Ottawa devient la plus longue patinoire au monde. La
+    glace y tient parce que l’eau du canal est peu profonde et presque immobile ; la
+    rivière des Outaouais, à quelques rues de là, coule trop vite pour geler de façon
+    uniforme.
+  </p>
+
+  <Question client:load id="reading-1/q3" />
+</Base>

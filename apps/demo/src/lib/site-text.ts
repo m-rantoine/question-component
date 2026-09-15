@@ -27,6 +27,10 @@ export const SITE_TEXT = {
       'Réponds à chaque question séparément. Tu peux changer d’idée et répondre de nouveau, sauf indication contraire — toutes les tentatives sont conservées.',
     'lesson.docTitle': 'Leçon un — Pose une question',
 
+    'reading.docTitle': 'Le canal Rideau — Pose une question',
+    'home.reading': 'Lecture : le canal Rideau',
+    'home.readingNote': 'Un texte avec des questions de compréhension intercalées.',
+
     'dashboard.lede':
       'Mise à jour toutes les cinq secondes pendant que la page est active. Les requêtes s’arrêtent après une minute d’inactivité, ou dès que l’onglet passe en arrière-plan.',
     'dashboard.docTitle': 'Tableau de bord',
@@ -54,6 +58,10 @@ export const SITE_TEXT = {
     'lesson.lede':
       'Answer each question on its own. You can change your mind and submit again unless the question says otherwise — every attempt is kept.',
     'lesson.docTitle': 'Lesson one — Ask a Question',
+
+    'reading.docTitle': 'The Rideau Canal — Ask a Question',
+    'home.reading': 'Reading: the Rideau Canal',
+    'home.readingNote': 'A text with comprehension questions scattered through it.',
 
     'dashboard.lede':
       'Updates every five seconds while this page is active. Polling pauses after a minute without activity, or as soon as the tab goes to the background.',

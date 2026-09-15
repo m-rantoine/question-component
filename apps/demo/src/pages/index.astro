@@ -14,6 +14,12 @@ import SiteText from '../components/SiteText.tsx';
         <SiteText client:load k="home.lessonNote" as="span" />
       </a>
     </li>
+    <li>
+      <a href="/lessons/reading-one">
+        <SiteText client:load k="home.reading" as="strong" />
+        <SiteText client:load k="home.readingNote" as="span" />
+      </a>
+    </li>
   </ul>
 
   <SiteText client:load k="home.dashboard" as="h2" />

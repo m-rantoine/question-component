@@ -8,7 +8,7 @@
   "files": [
     "dist",
     "bin",
-    "supabase",
+    "supabase/migrations",
     "README.md",
     "LICENSE"
   ],
@@ -25,6 +25,11 @@
       "types": "./dist/dashboard.d.ts",
       "import": "./dist/dashboard.js",
       "require": "./dist/dashboard.cjs"
+    },
+    "./questions": {
+      "types": "./dist/questions.d.ts",
+      "import": "./dist/questions.js",
+      "require": "./dist/questions.cjs"
     },
     "./server": {
       "types": "./dist/server.d.ts",

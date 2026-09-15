@@ -69,4 +69,25 @@ describe('defineGroup', () => {
     defineGroup('lesson-1', { q1: { type: 'long-text', question: 'Explain' } });
     expect(() => resolveQuestion('lesson-1/q9')).toThrow(/lesson-1\/q1/);
   });
+
+  it('tolerates the same bank being registered twice', () => {
+    // A bundler can evaluate a question bank once per module graph — a Next app
+    // importing it from both a Server Component and a "use client" module does
+    // exactly that. The two copies are different objects with the same ids.
+    const bank = () =>
+      defineGroup('lesson-1', {
+        q1: { type: 'short-text', question: 'Capital of France' },
+      });
+
+    expect(bank).not.toThrow();
+    expect(bank).not.toThrow();
+    expect(questionsInGroup('lesson-1')).toHaveLength(1);
+  });
+
+  it('still rejects two different questions under one id', () => {
+    defineGroup('lesson-1', { q1: { type: 'short-text', question: 'Capital of France' } });
+    expect(() =>
+      defineGroup('lesson-1', { q1: { type: 'short-text', question: 'Capital of Spain' } }),
+    ).toThrow(/Duplicate question id/);
+  });
 });

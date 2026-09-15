@@ -16,18 +16,47 @@ export function questionKey(groupId: string, questionId: string): string {
   return `${groupId}/${questionId}`;
 }
 
+/**
+ * A comparable form of a question, used to tell a real id collision from the
+ * same bank being registered twice.
+ *
+ * Bundlers duplicate modules more often than it seems: a Next app importing the
+ * bank from both a Server Component and a `"use client"` module evaluates it
+ * once per graph, in the same process, producing two distinct objects with the
+ * same ids. A `match` function cannot be compared, so both sides collapse to a
+ * marker — two banks that differ only in the body of a `match` are treated as
+ * the same question, which is the safe way round.
+ */
+function fingerprint(question: Question): string {
+  return JSON.stringify(question, (_key, value) =>
+    typeof value === 'function' ? '[function]' : value,
+  );
+}
+
+/** Enough of a question to see what differs, without filling the console. */
+function brief(question: Question): string {
+  const text = fingerprint(question);
+  return text.length > 160 ? `${text.slice(0, 160)}…` : text;
+}
+
 export function registerQuestion(question: Question): void {
   const key = questionKey(question.groupId, question.questionId);
   const existing = registry.get(key);
-  if (existing && existing !== question) {
+  if (existing) {
+    // Re-registering the identical question is a duplicated module, not a
+    // mistake. Two different questions under one id is the real error: it would
+    // put two questions' answers in one database bucket.
+    if (existing === question || fingerprint(existing) === fingerprint(question)) return;
     throw new Error(
       `[askq] Duplicate question id "${key}". Question ids must be unique within a group — ` +
-        `they are the database key for every answer.`,
+        `they are the database key for every answer.\n` +
+        `  already registered: ${brief(existing)}\n` +
+        `  now registering:    ${brief(question)}`,
     );
   }
   registry.set(key, question);
   const list = groups.get(question.groupId) ?? [];
-  if (!list.includes(question)) list.push(question);
+  list.push(question);
   groups.set(question.groupId, list);
 }
 

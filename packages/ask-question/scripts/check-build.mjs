@@ -17,7 +17,7 @@
 import { readFile } from 'node:fs/promises';
 
 const CLIENT = ['index.js', 'index.cjs', 'dashboard.js', 'dashboard.cjs'];
-const SERVER = ['server.js', 'server.cjs'];
+const SERVER = ['server.js', 'server.cjs', 'questions.js', 'questions.cjs'];
 // One per `exports` subpath, in both module formats.
 const TYPES = [
   'index.d.ts',
@@ -26,6 +26,8 @@ const TYPES = [
   'dashboard.d.cts',
   'server.d.ts',
   'server.d.cts',
+  'questions.d.ts',
+  'questions.d.cts',
 ];
 const DIRECTIVE = /^["']use client["'];?/;
 
@@ -55,7 +57,9 @@ for (const file of SERVER) {
   const source = await read(file);
   if (source === null) continue;
   if (DIRECTIVE.test(source.split('\n', 1)[0].trim())) {
-    problems.push(`dist/${file} must NOT start with "use client" — it runs on the server`);
+    problems.push(
+      `dist/${file} must NOT start with "use client" — it has to be importable from the server`,
+    );
   }
 }
 

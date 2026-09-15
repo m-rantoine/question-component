@@ -3,3 +3,4 @@
  * island resolve a question from its id string alone.
  */
 export { lessonOne, questions } from './lesson-one';
+export { readingOne } from './reading-one';

@@ -20,7 +20,8 @@ const shared = {
  * banner — and its placement is verified after every build by `scripts/check-build.mjs`,
  * since a directive that lands after the imports is inert and fails silently.
  *
- * The server entry must NOT carry it: it reads `process.env`.
+ * The server and questions entries must NOT carry it: one reads `process.env`,
+ * and the other has to be importable from a React Server Component.
  */
 export default defineConfig([
   {
@@ -36,5 +37,12 @@ export default defineConfig([
     ...shared,
     entry: ['src/server.ts'],
     platform: 'node',
+  },
+  {
+    ...shared,
+    entry: ['src/questions.ts'],
+    // No splitting: a shared chunk would put component code into the module
+    // graph of a Server Component that only wanted to define a question bank.
+    splitting: false,
   },
 ]);
