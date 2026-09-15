@@ -14,6 +14,7 @@ function row(partial: Partial<AnswerRow> & Pick<AnswerRow, 'answer'>): AnswerRow
     id: `seed-${seq}`,
     student_id: partial.student_id ?? `s${seq}`,
     student_name: partial.student_name ?? 'Ada',
+    session_id: partial.session_id ?? null,
     group_id: 'lesson-1',
     question_id: partial.question_id ?? 'q1',
     created_at: partial.created_at ?? `2026-01-01T00:00:${String(seq).padStart(2, '0')}.000Z`,

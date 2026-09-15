@@ -121,6 +121,7 @@ describe('interface language', () => {
         id: `r${seq}`,
         student_id: `s-${name}`,
         student_name: name,
+        session_id: null,
         group_id: 'lesson-1',
         question_id: 'q1',
         answer,

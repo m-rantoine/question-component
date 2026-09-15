@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { formatCorrectAnswer, gradeAnswer, isGraded } from '../grade';
 import { useMessages, useQuestion, useStudent } from '../hooks';
 import { randomId } from '../identity';
+import { getConfig } from '../runtime';
 import { submitAnswer } from '../store';
 import { getLocalAttemptCount, recordLocalAttempt } from '../submissions';
 import type { Messages } from '../i18n';
@@ -15,6 +16,11 @@ export interface AskQuestionProps {
   q?: Question;
   /** `"<groupId>/<questionId>"`. Use this from Astro, where island props must be JSON. */
   id?: string;
+  /**
+   * Which run this answer belongs to — a class period or a term. Defaults to
+   * `configure({ sessionId })`; leave both unset for one permanent pool.
+   */
+  sessionId?: string;
   className?: string;
   /** Prompt shown when nobody is signed in yet. */
   namePrompt?: string;
@@ -68,11 +74,13 @@ function validationMessage(
 export function AskQuestion({
   q,
   id,
+  sessionId,
   className,
   namePrompt,
   onSubmitted,
 }: AskQuestionProps) {
   const question = useQuestion(q, id);
+  const session = sessionId ?? getConfig().sessionId;
   const { student, loaded } = useStudent();
   const messages = useMessages();
   const uid = useId();
@@ -98,10 +106,15 @@ export function AskQuestion({
       setPhase('editing');
       return;
     }
-    const previous = getLocalAttemptCount(student.id, question.groupId, question.questionId);
+    const previous = getLocalAttemptCount(
+      student.id,
+      question.groupId,
+      question.questionId,
+      session,
+    );
     setAttempts(previous);
     setPhase(previous > 0 && !allowRetries ? 'submitted' : 'editing');
-  }, [student, question, allowRetries]);
+  }, [student, question, allowRetries, session]);
 
   const locked = !allowRetries && attempts > 0;
   const correctAnswerText = useMemo(() => formatCorrectAnswer(question), [question, messages]);
@@ -124,12 +137,18 @@ export function AskQuestion({
       id: randomId(),
       student_id: student.id,
       student_name: student.name,
+      session_id: session ?? null,
       group_id: question.groupId,
       question_id: question.questionId,
       answer,
     });
 
-    const attempt = recordLocalAttempt(student.id, question.groupId, question.questionId);
+    const attempt = recordLocalAttempt(
+      student.id,
+      question.groupId,
+      question.questionId,
+      session,
+    );
     const correct = gradeAnswer(question, answer);
     setAttempts(attempt);
     setOutcome({ value: answer, correct, queued: !result.delivered, attempt });

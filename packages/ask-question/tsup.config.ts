@@ -3,6 +3,9 @@ import { defineConfig } from 'tsup';
 
 const shared = {
   format: ['esm', 'cjs'] as const,
+  // `scripts/clean.mjs` empties dist before tsup starts. Neither config may
+  // clean: they run concurrently, and one would delete the other's output.
+  clean: false,
   dts: true,
   sourcemap: true,
   external: ['react', 'react-dom'],
@@ -23,7 +26,6 @@ export default defineConfig([
   {
     ...shared,
     entry: ['src/index.ts', 'src/dashboard.ts'],
-    clean: true,
     banner: { js: '"use client";' },
     async onSuccess() {
       // `cp` would break on Windows.
@@ -33,7 +35,6 @@ export default defineConfig([
   {
     ...shared,
     entry: ['src/server.ts'],
-    clean: false,
     platform: 'node',
   },
 ]);

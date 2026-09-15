@@ -8,6 +8,9 @@
  *    someone imports the package into a Next App Router project.
  * 2. The server bundle must NOT carry the directive, or Next will refuse to use
  *    `process.env` in it.
+ * 3. Every entry must ship declarations. The two tsup configs run concurrently,
+ *    so a `.d.ts` can be produced and then deleted by the other config's clean;
+ *    the JS still works and TypeScript silently falls back to `any`.
  *
  * Run as part of `build`, so a broken artifact cannot be published or committed.
  */
@@ -15,6 +18,15 @@ import { readFile } from 'node:fs/promises';
 
 const CLIENT = ['index.js', 'index.cjs', 'dashboard.js', 'dashboard.cjs'];
 const SERVER = ['server.js', 'server.cjs'];
+// One per `exports` subpath, in both module formats.
+const TYPES = [
+  'index.d.ts',
+  'index.d.cts',
+  'dashboard.d.ts',
+  'dashboard.d.cts',
+  'server.d.ts',
+  'server.d.cts',
+];
 const DIRECTIVE = /^["']use client["'];?/;
 
 const problems = [];
@@ -47,6 +59,13 @@ for (const file of SERVER) {
   }
 }
 
+for (const file of TYPES) {
+  const source = await read(file);
+  if (source !== null && !/\bexport\b/.test(source)) {
+    problems.push(`dist/${file} declares nothing`);
+  }
+}
+
 const styles = await read('styles.css');
 if (styles !== null && !styles.includes('--askq-')) {
   problems.push('dist/styles.css does not look like the stylesheet');
@@ -59,4 +78,7 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-console.log(`Build check passed (${CLIENT.length} client + ${SERVER.length} server bundles).`);
+console.log(
+  `Build check passed (${CLIENT.length} client + ${SERVER.length} server bundles, ` +
+    `${TYPES.length} declaration files).`,
+);

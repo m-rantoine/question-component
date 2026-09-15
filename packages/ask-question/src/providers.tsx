@@ -29,6 +29,8 @@ export function QuestionProvider({ config, children }: QuestionProviderProps) {
 
 export interface AnswersProviderProps {
   groupId: string;
+  /** Poll one session only. Omit to read every session, including unscoped answers. */
+  sessionId?: string;
   config?: Partial<AskqConfig>;
   /** Renders the "polling paused" banner above the children. Defaults to true. */
   showIdleBanner?: boolean;
@@ -42,6 +44,7 @@ export interface AnswersProviderProps {
  */
 export function AnswersProvider({
   groupId,
+  sessionId,
   config,
   showIdleBanner = true,
   children,
@@ -51,7 +54,7 @@ export function AnswersProvider({
     configure(config);
     applied.current = true;
   }
-  useGroupSubscription(groupId);
+  useGroupSubscription({ groupId, sessionId });
   return (
     <>
       {showIdleBanner ? <IdleBanner /> : null}

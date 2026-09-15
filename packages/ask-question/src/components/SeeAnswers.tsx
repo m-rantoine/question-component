@@ -21,6 +21,8 @@ export interface SeeAnswersProps {
   id?: string;
   /** Defaults to `summary`. `toggle` adds a switch between the two views. */
   view?: AnswersView;
+  /** Score one session only. Omit to include every session, and unscoped answers. */
+  sessionId?: string;
   className?: string;
   /** Hide the question text, e.g. when the dashboard already prints it. */
   hideQuestion?: boolean;
@@ -33,13 +35,14 @@ export function SeeAnswers({
   q,
   id,
   view = 'summary',
+  sessionId,
   className,
   hideQuestion,
   titleHref,
 }: SeeAnswersProps) {
   const question = useQuestion(q, id);
   const { locale, messages } = useLocale();
-  const summary = useQuestionSummary(question);
+  const summary = useQuestionSummary(question, sessionId);
   const [active, setActive] = useState<'summary' | 'per-student'>(
     view === 'per-student' ? 'per-student' : 'summary',
   );

@@ -32,21 +32,32 @@ function write(map: SubmittedMap): void {
   }
 }
 
+/**
+ * Keyed by session as well, so a student locked out of a single-attempt
+ * question during period 1 is not still locked during period 2.
+ */
+function attemptKey(groupId: string, questionId: string, sessionId?: string): string {
+  const base = questionKey(groupId, questionId);
+  return sessionId === undefined ? base : `${base}@${sessionId}`;
+}
+
 export function getLocalAttemptCount(
   studentId: string,
   groupId: string,
   questionId: string,
+  sessionId?: string,
 ): number {
-  return read()[studentId]?.[questionKey(groupId, questionId)]?.count ?? 0;
+  return read()[studentId]?.[attemptKey(groupId, questionId, sessionId)]?.count ?? 0;
 }
 
 export function recordLocalAttempt(
   studentId: string,
   groupId: string,
   questionId: string,
+  sessionId?: string,
 ): number {
   const map = read();
-  const key = questionKey(groupId, questionId);
+  const key = attemptKey(groupId, questionId, sessionId);
   const forStudent = map[studentId] ?? {};
   const next = (forStudent[key]?.count ?? 0) + 1;
   forStudent[key] = { count: next, lastAt: Date.now() };

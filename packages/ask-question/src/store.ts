@@ -1,6 +1,6 @@
 import { isPollingPaused, subscribeToIdle } from './idle';
 import { dequeue, enqueue, readOutbox } from './outbox';
-import { runtime, type GroupSnapshot, type GroupState } from './runtime';
+import { runtime, scopeKey, type GroupScope, type GroupSnapshot, type GroupState } from './runtime';
 import { getTransport } from './transport';
 import type { AnswerRow, PendingAnswerRow } from './types';
 
@@ -9,24 +9,35 @@ import type { AnswerRow, PendingAnswerRow } from './types';
 const CURSOR_OVERLAP_MS = 2000;
 const MAX_BACKOFF_MS = 60_000;
 
-// One frozen empty snapshot per group id. `useSyncExternalStore` compares
+// One frozen empty snapshot per scope. `useSyncExternalStore` compares
 // snapshots by identity, so returning a fresh object here would loop forever.
 const EMPTY_SNAPSHOTS = new Map<string, GroupSnapshot>();
 
-function emptySnapshot(groupId: string): GroupSnapshot {
-  let snapshot = EMPTY_SNAPSHOTS.get(groupId);
+function emptySnapshot(scope: GroupScope): GroupSnapshot {
+  const key = scopeKey(scope);
+  let snapshot = EMPTY_SNAPSHOTS.get(key);
   if (!snapshot) {
-    snapshot = { groupId, rows: [], status: 'idle', error: null, lastFetchedAt: null };
-    EMPTY_SNAPSHOTS.set(groupId, snapshot);
+    snapshot = {
+      groupId: scope.groupId,
+      sessionId: scope.sessionId,
+      rows: [],
+      status: 'idle',
+      error: null,
+      lastFetchedAt: null,
+    };
+    EMPTY_SNAPSHOTS.set(key, snapshot);
   }
   return snapshot;
 }
 
-function getGroup(groupId: string): GroupState {
-  let group = runtime.groups.get(groupId);
+function getGroup(scope: GroupScope): GroupState {
+  const key = scopeKey(scope);
+  let group = runtime.groups.get(key);
   if (!group) {
     group = {
-      groupId,
+      key,
+      groupId: scope.groupId,
+      sessionId: scope.sessionId,
       rows: [],
       seen: new Set(),
       cursor: null,
@@ -38,16 +49,22 @@ function getGroup(groupId: string): GroupState {
       timer: null,
       inFlight: false,
       failures: 0,
-      snapshot: emptySnapshot(groupId),
+      snapshot: emptySnapshot(scope),
     };
-    runtime.groups.set(groupId, group);
+    runtime.groups.set(key, group);
   }
   return group;
+}
+
+/** The scope a cached group was opened with. */
+function scopeOf(group: GroupState): GroupScope {
+  return { groupId: group.groupId, sessionId: group.sessionId };
 }
 
 function publish(group: GroupState): void {
   group.snapshot = {
     groupId: group.groupId,
+    sessionId: group.sessionId,
     rows: group.rows,
     status: group.status,
     error: group.error,
@@ -72,8 +89,8 @@ function advanceCursor(group: GroupState): void {
   group.cursor = Number.isNaN(overlapped.getTime()) ? null : overlapped.toISOString();
 }
 
-async function fetchGroup(groupId: string, full = false): Promise<void> {
-  const group = getGroup(groupId);
+async function fetchGroup(scope: GroupScope, full = false): Promise<void> {
+  const group = getGroup(scope);
   if (group.inFlight) return;
   group.inFlight = true;
   if (group.status === 'idle') {
@@ -83,7 +100,7 @@ async function fetchGroup(groupId: string, full = false): Promise<void> {
 
   try {
     const since = full ? null : group.cursor;
-    const rows = await getTransport().fetchAnswers(groupId, since);
+    const rows = await getTransport().fetchAnswers(scope, since);
     mergeRows(group, rows);
     advanceCursor(group);
     group.failures = 0;
@@ -113,13 +130,13 @@ function schedule(group: GroupState): void {
   if (group.subscribers === 0) return;
   // Chained timeout rather than setInterval: a slow request must never stack
   // another request on top of itself.
-  group.timer = setTimeout(() => void poll(group.groupId), nextDelay(group));
+  group.timer = setTimeout(() => void poll(scopeOf(group)), nextDelay(group));
 }
 
-async function poll(groupId: string): Promise<void> {
-  const group = getGroup(groupId);
+async function poll(scope: GroupScope): Promise<void> {
+  const group = getGroup(scope);
   if (group.subscribers === 0) return;
-  if (!isPollingPaused()) await fetchGroup(groupId);
+  if (!isPollingPaused()) await fetchGroup(scope);
   schedule(group);
 }
 
@@ -137,7 +154,7 @@ function watchIdle(): void {
       for (const group of runtime.groups.values()) {
         if (group.subscribers > 0) {
           group.cursor = null;
-          void fetchGroup(group.groupId, true).then(() => schedule(group));
+          void fetchGroup(scopeOf(group), true).then(() => schedule(group));
         }
       }
     }
@@ -145,15 +162,19 @@ function watchIdle(): void {
   });
 }
 
-/** Subscribe to a group's answers. The first subscriber starts the poller; the last stops it. */
-export function subscribeToGroup(groupId: string, listener: () => void): () => void {
-  const group = getGroup(groupId);
+/**
+ * Subscribe to one scope's answers. The first subscriber starts the poller; the
+ * last stops it. A scope is a group plus an optional session, so a dashboard
+ * filtered to period 2 polls separately from one showing every session.
+ */
+export function subscribeToGroup(scope: GroupScope, listener: () => void): () => void {
+  const group = getGroup(scope);
   group.listeners.add(listener);
   group.subscribers += 1;
   watchIdle();
 
   if (group.subscribers === 1) {
-    void fetchGroup(groupId, group.rows.length === 0).then(() => schedule(group));
+    void fetchGroup(scope, group.rows.length === 0).then(() => schedule(group));
     void flushOutbox();
   }
 
@@ -167,28 +188,34 @@ export function subscribeToGroup(groupId: string, listener: () => void): () => v
   };
 }
 
-export function getGroupSnapshot(groupId: string): GroupSnapshot {
-  return runtime.groups.get(groupId)?.snapshot ?? emptySnapshot(groupId);
+export function getGroupSnapshot(scope: GroupScope): GroupSnapshot {
+  return runtime.groups.get(scopeKey(scope))?.snapshot ?? emptySnapshot(scope);
 }
 
 /** Server render has no answers; the same cached instance keeps hydration stable. */
-export function getServerGroupSnapshot(groupId: string): GroupSnapshot {
-  return emptySnapshot(groupId);
+export function getServerGroupSnapshot(scope: GroupScope): GroupSnapshot {
+  return emptySnapshot(scope);
 }
 
-export function refreshGroup(groupId: string): Promise<void> {
-  const group = getGroup(groupId);
+export function refreshGroup(scope: GroupScope): Promise<void> {
+  const group = getGroup(scope);
   group.cursor = null;
-  return fetchGroup(groupId, true).then(() => schedule(group));
+  return fetchGroup(scope, true).then(() => schedule(group));
 }
 
 /**
  * Adds a locally-submitted answer to the cache immediately, so a dashboard open
  * on the same page reflects it without waiting for the next poll.
+ *
+ * The row lands in every cached scope that would have fetched it: its own
+ * session, and any all-sessions view of the same group.
  */
 export function recordLocalAnswer(row: AnswerRow): void {
-  const group = getGroup(row.group_id);
-  if (mergeRows(group, [row])) publish(group);
+  for (const group of runtime.groups.values()) {
+    if (group.groupId !== row.group_id) continue;
+    if (group.sessionId !== undefined && group.sessionId !== row.session_id) continue;
+    if (mergeRows(group, [row])) publish(group);
+  }
 }
 
 /** Submit one attempt. Never throws for network reasons — it queues instead. */

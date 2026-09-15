@@ -102,6 +102,11 @@ export interface AnswerRow {
   id: string;
   student_id: string;
   student_name: string;
+  /**
+   * Which run of these questions this answer belongs to — a class period, a
+   * section, or the same lesson taught again next term. `null` means unscoped.
+   */
+  session_id: string | null;
   group_id: string;
   question_id: string;
   answer: AnswerValue;

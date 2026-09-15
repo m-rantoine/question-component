@@ -7,6 +7,12 @@ export interface AskqConfig {
   supabaseAnonKey?: string;
   /** Server route that reads results with the service-role key. */
   readEndpoint: string;
+  /**
+   * Default run identifier attached to every answer — a class period, section
+   * or term. Individual components can override it. Leave unset for one
+   * permanent pool of answers per group.
+   */
+  sessionId?: string;
   /** How often the dashboard polls, in ms. */
   pollMs: number;
   /** Idle time before polling pauses, in ms. */
@@ -17,9 +23,20 @@ export interface AskqConfig {
   transport?: Transport;
 }
 
+export interface GroupScope {
+  groupId: string;
+  /** Omit to read every session, including answers with no session at all. */
+  sessionId?: string;
+}
+
+/** Cache and poller key. One scope is one poller and one row cache. */
+export function scopeKey(scope: GroupScope): string {
+  return `${scope.groupId}|${scope.sessionId ?? ''}`;
+}
+
 export interface Transport {
   submit(row: Omit<AnswerRow, 'created_at'>): Promise<void>;
-  fetchAnswers(groupId: string, since: string | null): Promise<AnswerRow[]>;
+  fetchAnswers(scope: GroupScope, since: string | null): Promise<AnswerRow[]>;
 }
 
 export type GroupStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -27,6 +44,7 @@ export type GroupStatus = 'idle' | 'loading' | 'ready' | 'error';
 /** Immutable view handed to React. Replaced wholesale on every change. */
 export interface GroupSnapshot {
   groupId: string;
+  sessionId: string | undefined;
   rows: readonly AnswerRow[];
   status: GroupStatus;
   error: string | null;
@@ -34,7 +52,10 @@ export interface GroupSnapshot {
 }
 
 export interface GroupState {
+  /** `${groupId}|${sessionId ?? ''}` — see scopeKey(). */
+  key: string;
   groupId: string;
+  sessionId: string | undefined;
   rows: AnswerRow[];
   seen: Set<string>;
   cursor: string | null;

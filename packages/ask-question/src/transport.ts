@@ -1,4 +1,4 @@
-import { runtime, type Transport } from './runtime';
+import { runtime, type GroupScope, type Transport } from './runtime';
 import type { AnswerRow } from './types';
 
 /**
@@ -35,9 +35,20 @@ export function createSupabaseTransport(options: {
       }
     },
 
-    async fetchAnswers(groupId, since) {
-      const url = new URL(options.readEndpoint, window.location.origin);
-      url.searchParams.set('groupId', groupId);
+    async fetchAnswers(scope, since) {
+      // An absolute readEndpoint works anywhere; a relative one needs an origin,
+      // which only exists in a browser. Guarded so a server render fails with a
+      // useful message instead of "window is not defined".
+      const origin = typeof window === 'undefined' ? undefined : window.location.origin;
+      if (origin === undefined && !/^https?:\/\//i.test(options.readEndpoint)) {
+        throw new Error(
+          `[askq] readEndpoint "${options.readEndpoint}" is relative and there is no browser ` +
+            `origin to resolve it against. Pass an absolute URL when reading answers outside a browser.`,
+        );
+      }
+      const url = new URL(options.readEndpoint, origin);
+      url.searchParams.set('groupId', scope.groupId);
+      if (scope.sessionId !== undefined) url.searchParams.set('sessionId', scope.sessionId);
       if (since) url.searchParams.set('since', since);
       const response = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!response.ok) {
@@ -68,9 +79,10 @@ export function createMemoryTransport(seed: AnswerRow[] = []): Transport {
       if (rows.some((existing) => existing.id === row.id)) return;
       rows.push({ ...row, created_at: new Date().toISOString() });
     },
-    async fetchAnswers(groupId, since) {
+    async fetchAnswers(scope, since) {
       return rows
-        .filter((row) => row.group_id === groupId)
+        .filter((row) => row.group_id === scope.groupId)
+        .filter((row) => scope.sessionId === undefined || row.session_id === scope.sessionId)
         .filter((row) => !since || row.created_at >= since)
         .sort((a, b) => a.created_at.localeCompare(b.created_at));
     },

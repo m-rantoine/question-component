@@ -20,7 +20,17 @@ export {
   resetRegistry,
 } from './registry';
 
-export { configure, getConfig, isOfflineMode, resetRuntime, type AskqConfig, type Transport, type GroupSnapshot } from './runtime';
+export {
+  configure,
+  getConfig,
+  isOfflineMode,
+  resetRuntime,
+  scopeKey,
+  type AskqConfig,
+  type GroupScope,
+  type GroupSnapshot,
+  type Transport,
+} from './runtime';
 export { createMemoryTransport, createSupabaseTransport } from './transport';
 
 export {
