@@ -17,8 +17,13 @@
 import type { AnswerRow } from './types';
 
 const ID_PATTERN = /^[A-Za-z0-9_.-]{1,64}$/;
-const COLUMNS = 'id,student_id,student_name,session_id,group_id,question_id,answer,created_at';
+const BASE_COLUMNS = 'id,student_id,student_name,group_id,question_id,answer,created_at';
+const COLUMNS = `id,student_id,student_name,session_id,group_id,question_id,answer,created_at`;
 const DEFAULT_MAX_ROWS = 5000;
+
+/** Postgres `undefined_column`, as PostgREST reports it. */
+const UNDEFINED_COLUMN = '42703';
+let warnedAboutSessionId = false;
 
 export interface AnswersHandlerOptions {
   /** Defaults to `SUPABASE_URL`, then `PUBLIC_SUPABASE_URL`, then `NEXT_PUBLIC_SUPABASE_URL`. */
@@ -80,21 +85,46 @@ export function createAnswersHandler(options: AnswersHandlerOptions = {}) {
       );
     }
 
-    const query = new URL(`${supabaseUrl.replace(/\/+$/, '')}/rest/v1/answers`);
-    query.searchParams.set('select', COLUMNS);
-    query.searchParams.set('group_id', `eq.${groupId}`);
-    if (sessionId !== null) query.searchParams.set('session_id', `eq.${sessionId}`);
-    if (since) query.searchParams.set('created_at', `gte.${since}`);
-    query.searchParams.set('order', 'created_at.asc');
-    query.searchParams.set('limit', String(options.maxRows ?? DEFAULT_MAX_ROWS));
+    const base = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/answers`;
+    const headers = {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      Accept: 'application/json',
+    };
 
-    const response = await fetch(query, {
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        Accept: 'application/json',
-      },
-    });
+    function build(withSession: boolean): URL {
+      const query = new URL(base);
+      query.searchParams.set('select', withSession ? COLUMNS : BASE_COLUMNS);
+      query.searchParams.set('group_id', `eq.${groupId}`);
+      if (withSession && sessionId !== null) {
+        query.searchParams.set('session_id', `eq.${sessionId}`);
+      }
+      if (since) query.searchParams.set('created_at', `gte.${since}`);
+      query.searchParams.set('order', 'created_at.asc');
+      query.searchParams.set('limit', String(options.maxRows ?? DEFAULT_MAX_ROWS));
+      return query;
+    }
+
+    let response = await fetch(build(true), { headers });
+    let hasSessionColumn = true;
+
+    if (!response.ok) {
+      // A deploy can land before its migration does. Rather than take the
+      // dashboard down for that window, fall back to the pre-session columns
+      // once and say what needs applying. It heals itself when 0002 lands.
+      const body = await response.text().catch(() => '');
+      if (body.includes(UNDEFINED_COLUMN) && body.includes('session_id')) {
+        if (!warnedAboutSessionId) {
+          warnedAboutSessionId = true;
+          console.warn(
+            '[askq] The answers table has no session_id column, so session filtering is off. ' +
+              'Apply migration 0002_add_session_id.sql.',
+          );
+        }
+        hasSessionColumn = false;
+        response = await fetch(build(false), { headers });
+      }
+    }
 
     if (!response.ok) {
       // Never echo the upstream body: it can carry configuration detail.
@@ -103,7 +133,9 @@ export function createAnswersHandler(options: AnswersHandlerOptions = {}) {
     }
 
     const rows = (await response.json()) as AnswerRow[];
-    return json({ rows });
+    // The client's row type requires the field, so supply it rather than
+    // leaving every row a shape the components do not expect.
+    return json({ rows: hasSessionColumn ? rows : rows.map((row) => ({ ...row, session_id: null })) });
   };
 }
 

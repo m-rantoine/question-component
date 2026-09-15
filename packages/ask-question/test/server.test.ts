@@ -101,4 +101,36 @@ describe('createAnswersHandler', () => {
     expect((await handler(get('?groupId=lesson-1'))).status).toBe(401);
     expect(fetched.calls).toHaveLength(0);
   });
+
+  it('falls back to the pre-session columns when 0002 has not been applied', async () => {
+    // A deploy can land before its migration. Taking the dashboard down for
+    // that window would be worse than losing session filtering for it.
+    const calls: URL[] = [];
+    vi.stubGlobal('fetch', async (input: URL | RequestInfo) => {
+      const url = new URL(String(input));
+      calls.push(url);
+      if (url.searchParams.get('select')?.includes('session_id')) {
+        return new Response(
+          JSON.stringify({ code: '42703', message: 'column answers.session_id does not exist' }),
+          { status: 400 },
+        );
+      }
+      return new Response(JSON.stringify([{ id: 'r1', group_id: 'lesson-1' }]), { status: 200 });
+    });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const response = await createAnswersHandler(CONFIG)(get('?groupId=lesson-1'));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ rows: [{ id: 'r1', group_id: 'lesson-1', session_id: null }] });
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.searchParams.get('select')).not.toContain('session_id');
+  });
+
+  it('does not retry an unrelated 400', async () => {
+    const calls = stubFetch(new Response(JSON.stringify({ code: '22P02' }), { status: 400 }));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect((await createAnswersHandler(CONFIG)(get('?groupId=lesson-1'))).status).toBe(502);
+    expect(calls.calls).toHaveLength(1);
+  });
 });
