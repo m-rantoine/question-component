@@ -2,11 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { questionsInGroup, registeredGroupIds } from '@askq/react';
 import Base from '../../../../layouts/Base.astro';
-import Results from '../../../../components/Results.tsx';
-import QuestionNav from '../../../../components/QuestionNav.tsx';
-import GroupHeading from '../../../../components/GroupHeading.tsx';
-import SiteText from '../../../../components/SiteText.tsx';
-import { DASHBOARD_ROOT, groupHref, questionHref } from '../../../../lib/dashboard-links';
+import Dashboard from '../../../../components/Dashboard.tsx';
 import '../../../../questions';
 
 export const getStaticPaths = (() =>
@@ -17,12 +13,6 @@ export const getStaticPaths = (() =>
   )) satisfies GetStaticPaths;
 
 const { groupId, questionId } = Astro.params;
-
-// Prev/next follow the order the question bank declares, not alphabetical ids.
-const questions = questionsInGroup(groupId!);
-const index = questions.findIndex((q) => q.questionId === questionId);
-const previous = index > 0 ? questions[index - 1] : undefined;
-const next = index < questions.length - 1 ? questions[index + 1] : undefined;
 ---
 
 <Base
@@ -31,29 +21,5 @@ const next = index < questions.length - 1 ? questions[index + 1] : undefined;
   noindex
   hideIdentity
 >
-  <p class="crumb">
-    <a href={DASHBOARD_ROOT}><SiteText client:load k="dashboard.allGroups" /></a>
-  </p>
-
-  <GroupHeading client:load groupId={groupId!} questionCount={questions.length} href={groupHref(groupId!)} />
-
-  <QuestionNav
-    client:load
-    prevHref={previous ? questionHref(groupId!, previous.questionId) : null}
-    nextHref={next ? questionHref(groupId!, next.questionId) : null}
-    groupHref={groupHref(groupId!)}
-    index={index + 1}
-    total={questions.length}
-  />
-
-  <Results client:load groupId={groupId!} questionIds={[`${groupId}/${questionId}`]} view="toggle" />
-
-  <QuestionNav
-    client:load
-    prevHref={previous ? questionHref(groupId!, previous.questionId) : null}
-    nextHref={next ? questionHref(groupId!, next.questionId) : null}
-    groupHref={groupHref(groupId!)}
-    index={index + 1}
-    total={questions.length}
-  />
+  <Dashboard client:load show="question" groupId={groupId!} questionId={questionId!} />
 </Base>

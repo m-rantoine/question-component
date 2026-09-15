@@ -7,6 +7,12 @@
  * aggregation code or the CSV writer — none of which it can use.
  */
 
+export {
+  AnswerDashboard,
+  type AnswerDashboardCommon,
+  type AnswerDashboardProps,
+  type DashboardTarget,
+} from './components/AnswerDashboard';
 export { SeeAnswers, type AnswersView, type SeeAnswersProps } from './components/SeeAnswers';
 export { AnswersProvider, type AnswersProviderProps } from './providers';
 
@@ -14,7 +20,17 @@ export {
   useGroupAnswers,
   useGroupSubscription,
   useQuestionSummary,
+  useSessionIds,
 } from './hooks';
+
+export {
+  CSV_COLUMNS,
+  csvFilename,
+  downloadCsv,
+  toCsv,
+  type CsvFilenameParts,
+  type CsvOptions,
+} from './csv';
 
 export {
   attemptStats,

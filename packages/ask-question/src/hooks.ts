@@ -19,7 +19,15 @@ import {
 } from './i18n';
 import { resolveQuestion, tryResolveQuestion } from './registry';
 import type { GroupScope, GroupSnapshot } from './runtime';
-import { getGroupSnapshot, getServerGroupSnapshot, refreshGroup, subscribeToGroup } from './store';
+import {
+  getGroupSnapshot,
+  getKnownSessions,
+  getServerGroupSnapshot,
+  getSessionsVersion,
+  refreshGroup,
+  subscribeToGroup,
+  subscribeToSessions,
+} from './store';
 import { summariseQuestion, type QuestionSummary } from './aggregate';
 import type { Question } from './types';
 
@@ -70,6 +78,31 @@ export function useGroupAnswers(scope: GroupScope): GroupSnapshot & { refresh: (
   );
   const refresh = useCallback(() => void refreshGroup({ groupId, sessionId }), [groupId, sessionId]);
   return { ...snapshot, refresh };
+}
+
+const NO_SESSIONS: readonly string[] = [];
+
+/**
+ * Every session id seen so far across the given groups, sorted.
+ *
+ * Feeds the session picker. It reads an index that accumulates rather than the
+ * rows on screen, because once a dashboard is filtered to one session its
+ * poller only ever returns that session — and the picker still has to offer
+ * the others.
+ */
+export function useSessionIds(groupIds: string | readonly string[]): readonly string[] {
+  // Group ids cannot contain a comma (they match /^[A-Za-z0-9_.-]+$/), so this
+  // is a safe stable dependency for the memo below.
+  const key = typeof groupIds === 'string' ? groupIds : groupIds.join(',');
+  const version = useSyncExternalStore(subscribeToSessions, getSessionsVersion, () => 0);
+  return useMemo(() => {
+    const ids = key ? key.split(',') : [];
+    if (ids.length === 1) return getKnownSessions(ids[0] as string);
+    const union = new Set<string>();
+    for (const id of ids) for (const session of getKnownSessions(id)) union.add(session);
+    return union.size === 0 ? NO_SESSIONS : [...union].sort();
+    // `version` is the store signal; `key` is which groups to union.
+  }, [key, version]);
 }
 
 export interface IdleControls {

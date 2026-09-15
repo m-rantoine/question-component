@@ -480,10 +480,21 @@
   font-size: 1.05rem;
 }
 
+/* Either an <a> or a <button>; the button is reset so the two are identical. */
 .askq-answers__link {
   color: inherit;
+  text-decoration: underline;
   text-decoration-color: var(--askq-border-strong);
   text-underline-offset: 3px;
+}
+
+button.askq-answers__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .askq-answers__link:hover {
@@ -715,6 +726,225 @@
 .askq-history__when {
   font-variant-numeric: tabular-nums;
   color: var(--askq-muted);
+}
+
+/* ---------------------------------------------------------------------------
+ * Dashboard
+ *
+ * Navigation renders as <a> when the host passes `linkTo` and as <button>
+ * otherwise, so every rule here targets both — the two must be visually
+ * indistinguishable or the same dashboard would look different depending on
+ * how it was mounted.
+ * ------------------------------------------------------------------------- */
+
+.askq-dashboard {
+  color: var(--askq-text);
+}
+
+.askq-dashboard__group {
+  margin-bottom: 40px;
+}
+
+.askq-dashboard__empty {
+  color: var(--askq-muted);
+}
+
+.askq-dashboard__crumb {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+}
+
+.askq-dashboard__crumb button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--askq-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.askq-dashboard__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block: 24px 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--askq-border);
+}
+
+.askq-dashboard__heading-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.askq-dashboard__heading-title a,
+.askq-dashboard__heading-title button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--askq-border-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.askq-dashboard__heading-title a:hover,
+.askq-dashboard__heading-title button:hover {
+  text-decoration-color: var(--askq-accent);
+}
+
+.askq-dashboard__heading-title code,
+.askq-dashboard__picker-item code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+}
+
+.askq-dashboard__count {
+  color: var(--askq-muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.askq-dashboard__picker-title {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+.askq-dashboard__picker-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.askq-dashboard__picker-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--askq-border);
+  border-radius: var(--askq-radius);
+  background: var(--askq-surface-raised);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.askq-dashboard__picker-item:hover {
+  border-color: var(--askq-accent);
+}
+
+.askq-dashboard__sessions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-block: 12px;
+  font-size: 0.9375rem;
+  color: var(--askq-text-secondary);
+}
+
+.askq-dashboard__sessions select {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--askq-border);
+  border-radius: var(--askq-radius);
+  background: var(--askq-surface-raised);
+  color: var(--askq-text);
+  font: inherit;
+}
+
+.askq-dashboard__export {
+  margin-block: 16px;
+}
+
+.askq-dashboard__export-button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--askq-border);
+  border-radius: var(--askq-radius);
+  background: var(--askq-surface-raised);
+  color: var(--askq-accent);
+  font: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.askq-dashboard__export-button:hover {
+  border-color: var(--askq-accent);
+}
+
+.askq-qnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block: 16px;
+}
+
+.askq-qnav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--askq-border);
+  border-radius: var(--askq-radius);
+  background: var(--askq-surface-raised);
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--askq-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.askq-qnav__link:hover {
+  border-color: var(--askq-accent);
+}
+
+/* Disabled ends render as <span>, so they are not focusable in either mode. */
+.askq-qnav__link--off {
+  color: var(--askq-muted);
+  opacity: 0.55;
+  cursor: default;
+}
+
+.askq-qnav__link--off:hover {
+  border-color: var(--askq-border);
+}
+
+.askq-qnav__position {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--askq-muted);
+}
+
+.askq-qnav__up {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--askq-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 @media (max-width: 480px) {

@@ -28,6 +28,8 @@ export interface SeeAnswersProps {
   hideQuestion?: boolean;
   /** Turns the question title into a link, e.g. to this question's own page. */
   titleHref?: string;
+  /** Turns the question title into a button. Ignored when `titleHref` is set. */
+  onTitleClick?: () => void;
 }
 
 /** Teacher-facing results for one question. Reads from the shared group poller. */
@@ -39,6 +41,7 @@ export function SeeAnswers({
   className,
   hideQuestion,
   titleHref,
+  onTitleClick,
 }: SeeAnswersProps) {
   const question = useQuestion(q, id);
   const { locale, messages } = useLocale();
@@ -59,6 +62,10 @@ export function SeeAnswers({
               <a className="askq-answers__link" href={titleHref}>
                 <Markdown source={question.question} />
               </a>
+            ) : onTitleClick ? (
+              <button type="button" className="askq-answers__link" onClick={onTitleClick}>
+                <Markdown source={question.question} />
+              </button>
             ) : (
               <Markdown source={question.question} />
             )}

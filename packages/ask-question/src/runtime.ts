@@ -81,9 +81,26 @@ export interface IdleState {
   version: number;
 }
 
+/**
+ * Every session id ever seen for a group.
+ *
+ * The picker has to offer sessions the current filter is hiding: once a
+ * dashboard narrows to period 1, its poller only ever returns period 1. This
+ * accumulates instead, so the options survive filtering.
+ */
+export interface SessionIndex {
+  byGroup: Map<string, Set<string>>;
+  /** Frozen arrays handed to React, replaced only when the set actually grows. */
+  snapshots: Map<string, readonly string[]>;
+  listeners: Set<() => void>;
+  /** Bumped whenever a new session id appears, so React can recompute unions. */
+  version: number;
+}
+
 export interface Runtime {
   config: AskqConfig;
   groups: Map<string, GroupState>;
+  sessions: SessionIndex;
   idle: IdleState;
   warnedAboutMemory: boolean;
   /** Shared in-memory transport used when Supabase is not configured. */
@@ -101,6 +118,7 @@ function createRuntime(): Runtime {
   return {
     config: { ...DEFAULT_CONFIG },
     groups: new Map(),
+    sessions: { byGroup: new Map(), snapshots: new Map(), listeners: new Set(), version: 0 },
     idle: {
       paused: false,
       reason: null,
@@ -157,6 +175,8 @@ export function resetRuntime(): void {
     if (group.timer) clearTimeout(group.timer);
   }
   runtime.groups.clear();
+  runtime.sessions.byGroup.clear();
+  runtime.sessions.snapshots.clear();
   if (runtime.idle.timer) clearInterval(runtime.idle.timer);
   runtime.config = { ...DEFAULT_CONFIG };
   runtime.idle = createRuntime().idle;

@@ -81,6 +81,22 @@ export interface Messages {
   tableAttempts: string;
   tableAnswered: string;
 
+  // Dashboard
+  resultsTitle: string;
+  allGroups: string;
+  groupLabel: string;
+  backToGroup: string;
+  previousQuestion: string;
+  nextQuestion: string;
+  noGroups: string;
+  questionPosition: (index: number, total: number) => string;
+  questionCount: (n: number) => string;
+  chooseGroup: string;
+  sessionLabel: string;
+  allSessions: string;
+  noSession: string;
+  downloadCsv: string;
+
   // Answer formatting
   blankAnswer: string;
   nothingSelected: string;
@@ -141,6 +157,21 @@ const en: Messages = {
   tableAttempts: 'Attempts',
   tableAnswered: 'Answered',
 
+  resultsTitle: 'Results',
+  allGroups: 'All groups',
+  groupLabel: 'Group',
+  backToGroup: 'All questions in this group',
+  previousQuestion: '← Previous',
+  nextQuestion: 'Next →',
+  noGroups: 'No question groups are defined.',
+  questionPosition: (index, total) => `Question ${index} of ${total}`,
+  questionCount: (n) => (n === 1 ? '1 question' : `${n} questions`),
+  chooseGroup: 'Choose a group',
+  sessionLabel: 'Session',
+  allSessions: 'All sessions',
+  noSession: 'No session',
+  downloadCsv: 'Download CSV',
+
   blankAnswer: '(blank)',
   nothingSelected: '(nothing selected)',
   starsLabel: (n) => (n === 1 ? '1 star' : `${n} stars`),
@@ -200,6 +231,21 @@ const fr: Messages = {
   tableResult: 'Résultat',
   tableAttempts: 'Tentatives',
   tableAnswered: 'Répondu',
+
+  resultsTitle: 'Résultats',
+  allGroups: 'Tous les groupes',
+  groupLabel: 'Groupe',
+  backToGroup: 'Toutes les questions du groupe',
+  previousQuestion: '← Précédente',
+  nextQuestion: 'Suivante →',
+  noGroups: 'Aucun groupe de questions n’est défini.',
+  questionPosition: (index, total) => `Question ${index} sur ${total}`,
+  questionCount: (n) => (n === 1 ? '1 question' : `${n} questions`),
+  chooseGroup: 'Choisis un groupe',
+  sessionLabel: 'Séance',
+  allSessions: 'Toutes les séances',
+  noSession: 'Aucune séance',
+  downloadCsv: 'Télécharger le CSV',
 
   blankAnswer: '(vide)',
   nothingSelected: '(rien de sélectionné)',

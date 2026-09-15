@@ -1,40 +1,16 @@
 ---
-import { questionsInGroup, registeredGroupIds } from '@askq/react';
 import Base from '../../../layouts/Base.astro';
-import Results from '../../../components/Results.tsx';
-import GroupHeading from '../../../components/GroupHeading.tsx';
+import Dashboard from '../../../components/Dashboard.tsx';
 import SiteText from '../../../components/SiteText.tsx';
-import { groupHref } from '../../../lib/dashboard-links';
-import '../../../questions';
 
-// Every group, on one page. Each <Results> holds its own poller, so this costs
-// one request per group per interval — fine for a handful, and the per-group
-// pages exist for when a class has more.
-const groups = registeredGroupIds().map((groupId) => ({
-  groupId,
-  questionIds: questionsInGroup(groupId).map((q) => `${q.groupId}/${q.questionId}`),
-}));
+// Every group on one page. The dashboard holds one poller per group, so this
+// costs one request per group per interval — fine for a handful, and the
+// per-group pages exist for when a class has more.
 ---
 
 <Base titleKey="dashboard.docTitle" noindex hideIdentity>
   <SiteText client:load k="dashboard.allGroups" as="h1" />
   <SiteText client:load k="dashboard.lede" as="p" className="lede" />
 
-  {
-    groups.length === 0 ? (
-      <SiteText client:load k="dashboard.noGroups" as="p" className="lede" />
-    ) : (
-      groups.map((group) => (
-        <section class="group-section">
-          <GroupHeading
-            client:load
-            groupId={group.groupId}
-            questionCount={group.questionIds.length}
-            href={groupHref(group.groupId)}
-          />
-          <Results client:load groupId={group.groupId} questionIds={group.questionIds} view="toggle" />
-        </section>
-      ))
-    )
-  }
+  <Dashboard client:load show="all" />
 </Base>

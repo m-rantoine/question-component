@@ -73,8 +73,49 @@ function publish(group: GroupState): void {
   for (const listener of [...group.listeners]) listener();
 }
 
+const NO_SESSIONS: readonly string[] = [];
+
+/** Record any session ids we have not seen for this group, and notify if new. */
+function noteSessions(groupId: string, rows: readonly AnswerRow[]): void {
+  const index = runtime.sessions;
+  let known = index.byGroup.get(groupId);
+  if (!known) {
+    known = new Set();
+    index.byGroup.set(groupId, known);
+  }
+  let added = false;
+  for (const row of rows) {
+    if (row.session_id && !known.has(row.session_id)) {
+      known.add(row.session_id);
+      added = true;
+    }
+  }
+  if (!added) return;
+  // A new array only when the set grew: `useSyncExternalStore` compares by identity.
+  index.snapshots.set(groupId, [...known].sort());
+  index.version += 1;
+  for (const listener of [...index.listeners]) listener();
+}
+
+/** Every session id seen for a group, sorted. Accumulates across filters. */
+export function getKnownSessions(groupId: string): readonly string[] {
+  return runtime.sessions.snapshots.get(groupId) ?? NO_SESSIONS;
+}
+
+export function getSessionsVersion(): number {
+  return runtime.sessions.version;
+}
+
+export function subscribeToSessions(listener: () => void): () => void {
+  runtime.sessions.listeners.add(listener);
+  return () => {
+    runtime.sessions.listeners.delete(listener);
+  };
+}
+
 /** Merge fetched rows, dropping ids we already hold and keeping chronological order. */
 function mergeRows(group: GroupState, incoming: AnswerRow[]): boolean {
+  noteSessions(group.groupId, incoming);
   const fresh = incoming.filter((row) => !group.seen.has(row.id));
   if (fresh.length === 0) return false;
   for (const row of fresh) group.seen.add(row.id);

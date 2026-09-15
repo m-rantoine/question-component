@@ -27,16 +27,10 @@ export const SITE_TEXT = {
       'Réponds à chaque question séparément. Tu peux changer d’idée et répondre de nouveau, sauf indication contraire — toutes les tentatives sont conservées.',
     'lesson.docTitle': 'Leçon un — Pose une question',
 
-    'dashboard.title': 'Résultats',
     'dashboard.lede':
       'Mise à jour toutes les cinq secondes pendant que la page est active. Les requêtes s’arrêtent après une minute d’inactivité, ou dès que l’onglet passe en arrière-plan.',
     'dashboard.docTitle': 'Tableau de bord',
     'dashboard.allGroups': 'Tous les groupes',
-    'dashboard.group': 'Groupe',
-    'dashboard.backToGroup': 'Toutes les questions du groupe',
-    'dashboard.previous': '← Précédente',
-    'dashboard.next': 'Suivante →',
-    'dashboard.noGroups': 'Aucun groupe de questions n’est défini.',
 
     'setup.title': 'Mode démonstration.',
     'setup.body':
@@ -61,16 +55,10 @@ export const SITE_TEXT = {
       'Answer each question on its own. You can change your mind and submit again unless the question says otherwise — every attempt is kept.',
     'lesson.docTitle': 'Lesson one — Ask a Question',
 
-    'dashboard.title': 'Results',
     'dashboard.lede':
       'Updates every five seconds while this page is active. Polling pauses after a minute without activity, or as soon as the tab goes to the background.',
     'dashboard.docTitle': 'Teacher dashboard',
     'dashboard.allGroups': 'All groups',
-    'dashboard.group': 'Group',
-    'dashboard.backToGroup': 'All questions in this group',
-    'dashboard.previous': '← Previous',
-    'dashboard.next': 'Next →',
-    'dashboard.noGroups': 'No question groups are defined.',
 
     'setup.title': 'Demo mode.',
     'setup.body':
@@ -82,20 +70,4 @@ export type SiteKey = keyof (typeof SITE_TEXT)['fr'];
 
 export function siteText(locale: Locale, key: SiteKey): string {
   return SITE_TEXT[locale][key];
-}
-
-/** Wording that needs values interpolated, kept separate so SITE_TEXT stays plain strings. */
-export const SITE_FN = {
-  fr: {
-    questionPosition: (index: number, total: number) => `Question ${index} sur ${total}`,
-    questionCount: (n: number) => (n === 1 ? '1 question' : `${n} questions`),
-  },
-  en: {
-    questionPosition: (index: number, total: number) => `Question ${index} of ${total}`,
-    questionCount: (n: number) => (n === 1 ? '1 question' : `${n} questions`),
-  },
-} satisfies Record<Locale, Record<string, (...args: never[]) => string>>;
-
-export function siteFn(locale: Locale): (typeof SITE_FN)['fr'] {
-  return SITE_FN[locale];
 }
