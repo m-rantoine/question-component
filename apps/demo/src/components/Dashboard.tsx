@@ -1,6 +1,6 @@
 import '../lib/askq-config';
 import { AnswerDashboard, type AnswerDashboardProps, type DashboardTarget } from '@askq/react/dashboard';
-import { DASHBOARD_ROOT, groupHref, questionHref } from '../lib/dashboard-links';
+import { DASHBOARD_ROOT, LOGOUT_ACTION, groupHref, questionHref } from '../lib/dashboard-links';
 
 /**
  * Island wrapper around the packaged dashboard.
@@ -22,7 +22,7 @@ export default function Dashboard(props: AnswerDashboardProps & { signOut?: bool
       {...rest}
       linkTo={linkTo}
       sessionPicker
-      signOutHref={signOut ? '/api/teacher/logout' : undefined}
+      signOutHref={signOut ? LOGOUT_ACTION : undefined}
     />
   );
 }

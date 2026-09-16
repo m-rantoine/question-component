@@ -5,6 +5,7 @@
   --site-border: #d9d8d2;
   --site-accent: #2a78d6;
   --site-notice: #fff8e6;
+  --site-warning: #b45309;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,6 +16,7 @@
     --site-border: #3a3a37;
     --site-accent: #3987e5;
     --site-notice: #2b2718;
+    --site-warning: #fab219;
   }
 }
 
@@ -25,6 +27,7 @@
   --site-border: #3a3a37;
   --site-accent: #3987e5;
   --site-notice: #2b2718;
+  --site-warning: #fab219;
 }
 
 * {
@@ -108,6 +111,13 @@ a {
   border: 1px solid var(--site-border);
   border-radius: 8px;
   font-size: 0.9375rem;
+}
+
+/* The unprotected-dashboard warning: a border, not colour alone, so it still
+   reads as a warning without colour vision or in a high-contrast theme. */
+.notice--warning {
+  border-left: 4px solid var(--site-warning);
+  font-weight: 500;
 }
 
 .notice code {

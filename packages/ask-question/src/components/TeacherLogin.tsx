@@ -2,8 +2,11 @@ import { useId, useState } from 'react';
 import { useMessages } from '../hooks';
 
 export interface TeacherLoginProps {
-  /** The route running `createTeacherAuth().login`. */
-  action?: string;
+  /**
+   * The route running `createTeacherAuth().login`. Required — the form posts
+   * here, and the package cannot know where you mounted it.
+   */
+  action: string;
   /** Where to go after signing in. Defaults to `?next=` on the current URL. */
   next?: string;
   className?: string;
@@ -17,11 +20,7 @@ export interface TeacherLoginProps {
  * mint or read. The fetch is only so a wrong password can be reported without
  * losing the page.
  */
-export function TeacherLogin({
-  action = '/api/teacher/login',
-  next,
-  className,
-}: TeacherLoginProps) {
+export function TeacherLogin({ action, next, className }: TeacherLoginProps) {
   const messages = useMessages();
   const id = useId();
   const [error, setError] = useState<string | null>(null);

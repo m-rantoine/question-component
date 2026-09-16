@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { teacherAuth } from './lib/teacher-auth';
-import { DASHBOARD_ROOT } from './lib/dashboard-links';
+import { DASHBOARD_ROOT, READ_ENDPOINT } from './lib/dashboard-links';
 
 /**
  * One guard for both the dashboard pages and the answers endpoint.
@@ -14,7 +14,7 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   if (!auth) return next();
 
   const protectedPath =
-    url.pathname.startsWith(DASHBOARD_ROOT) || url.pathname === '/api/answers';
+    url.pathname.startsWith(DASHBOARD_ROOT) || url.pathname === READ_ENDPOINT;
   if (!protectedPath) return next();
 
   return (await auth.guard(request)) ?? next();

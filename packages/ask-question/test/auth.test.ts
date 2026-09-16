@@ -38,7 +38,19 @@ function api(cookie?: string): Request {
 
 describe('createTeacherAuth', () => {
   it('refuses to start without credentials', () => {
-    expect(() => createTeacherAuth({ secret: 'x'.repeat(32) })).toThrow(/ASKQ_TEACHER_USER/);
+    expect(() =>
+      createTeacherAuth({ secret: 'x'.repeat(32), loginPath: '/teacher/login' }),
+    ).toThrow(/ASKQ_TEACHER_USER/);
+  });
+
+  it('refuses to start without a login path', () => {
+    // A wrong or missing value would redirect a locked-out teacher to a 404,
+    // so there is no default to fall back to.
+    const { loginPath: _omitted, ...rest } = CONFIG;
+    expect(() => createTeacherAuth(rest as typeof CONFIG)).toThrow(/loginPath/);
+    expect(() => createTeacherAuth({ ...CONFIG, loginPath: 'teacher/login' })).toThrow(
+      /loginPath/,
+    );
   });
 
   it('refuses to start with a short secret', () => {

@@ -1,4 +1,5 @@
 import { createTeacherAuth, type TeacherAuth } from '@askq/react/server';
+import { LOGIN_PATH } from './dashboard-links';
 
 /**
  * The demo's teacher auth, or `null` when it has not been configured.
@@ -25,7 +26,7 @@ export function teacherAuth(): TeacherAuth | null {
 
   cached =
     user && password && secret
-      ? createTeacherAuth({ user, password, secret, loginPath: '/teacher/login' })
+      ? createTeacherAuth({ user, password, secret, loginPath: LOGIN_PATH })
       : null;
   return cached;
 }

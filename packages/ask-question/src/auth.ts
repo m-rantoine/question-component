@@ -10,7 +10,7 @@
  * who asks.
  *
  *   // Astro — src/pages/api/answers.ts
- *   const auth = createTeacherAuth();
+ *   const auth = createTeacherAuth({ loginPath: '/teacher/login' });
  *   const handler = createAnswersHandler({ authorize: auth.guard });
  *
  *   // Astro — src/middleware.ts, or a Next middleware / layout
@@ -34,8 +34,13 @@ export interface TeacherAuthOptions {
   cookieName?: string;
   /** Defaults to 12 hours. */
   maxAgeSeconds?: number;
-  /** Where `guard()` sends a browser that is not signed in. */
-  loginPath?: string;
+  /**
+   * Your login page — where `guard()` sends a browser that is not signed in,
+   * and where `logout()` returns to. Required: the package cannot know where
+   * you mounted it, and a wrong guess would redirect a locked-out teacher to a
+   * 404.
+   */
+  loginPath: string;
   /**
    * Adds `Secure` to the cookie. Defaults to true, and to false when
    * `NODE_ENV` is `development` so that `http://localhost` still works.
@@ -106,13 +111,13 @@ function clientKey(request: Request): string {
   );
 }
 
-export function createTeacherAuth(options: TeacherAuthOptions = {}): TeacherAuth {
+export function createTeacherAuth(options: TeacherAuthOptions): TeacherAuth {
   const user = options.user ?? env('ASKQ_TEACHER_USER');
   const password = options.password ?? env('ASKQ_TEACHER_PASSWORD');
   const secret = options.secret ?? env('ASKQ_AUTH_SECRET');
   const cookieName = options.cookieName ?? DEFAULT_COOKIE;
   const maxAge = options.maxAgeSeconds ?? DEFAULT_MAX_AGE;
-  const loginPath = options.loginPath ?? '/teacher/login';
+  const { loginPath } = options;
   const secure = options.secure ?? env('NODE_ENV') !== 'development';
 
   // Loud on purpose. A dashboard that silently falls back to "no password"
@@ -121,6 +126,12 @@ export function createTeacherAuth(options: TeacherAuthOptions = {}): TeacherAuth
     throw new Error(
       '[askq] Teacher auth needs ASKQ_TEACHER_USER and ASKQ_TEACHER_PASSWORD. ' +
         'Set them in the server environment — never with a PUBLIC_ or NEXT_PUBLIC_ prefix.',
+    );
+  }
+  if (!loginPath || !loginPath.startsWith('/')) {
+    throw new Error(
+      '[askq] createTeacherAuth needs loginPath — the same-origin path of your login page, ' +
+        "e.g. '/teacher/login'. guard() redirects there, so a wrong value locks the teacher out.",
     );
   }
   if (!secret || secret.length < MIN_SECRET_LENGTH) {

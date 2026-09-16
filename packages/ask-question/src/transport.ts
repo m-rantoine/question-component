@@ -93,6 +93,13 @@ export function getTransport(): Transport {
   const { transport, supabaseUrl, supabaseAnonKey, readEndpoint } = runtime.config;
   if (transport) return transport;
   if (supabaseUrl && supabaseAnonKey) {
+    if (!readEndpoint) {
+      throw new Error(
+        '[askq] configure({ readEndpoint }) is required once Supabase is configured. ' +
+          'Point it at the route where you mounted createAnswersHandler, e.g. ' +
+          "'/api/answers' — the package has no default, because it cannot know your routes.",
+      );
+    }
     return createSupabaseTransport({ supabaseUrl, supabaseAnonKey, readEndpoint });
   }
   if (!runtime.warnedAboutMemory) {

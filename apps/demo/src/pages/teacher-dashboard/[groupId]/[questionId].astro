@@ -1,8 +1,9 @@
 ---
-import { isTeacherAuthConfigured } from '../../../../lib/teacher-auth';
-import Base from '../../../../layouts/Base.astro';
-import Dashboard from '../../../../components/Dashboard.tsx';
-import '../../../../questions';
+import { isTeacherAuthConfigured } from '../../../lib/teacher-auth';
+import UnprotectedNotice from '../../../components/UnprotectedNotice.tsx';
+import Base from '../../../layouts/Base.astro';
+import Dashboard from '../../../components/Dashboard.tsx';
+import '../../../questions';
 
 const { groupId, questionId } = Astro.params;
 
@@ -19,5 +20,7 @@ const authConfigured = isTeacherAuthConfigured();
   noindex
   hideIdentity
 >
+  {!authConfigured && <UnprotectedNotice client:load />}
+
   <Dashboard client:load signOut={authConfigured} show="question" groupId={groupId!} questionId={questionId!} />
 </Base>

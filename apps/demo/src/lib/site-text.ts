@@ -20,7 +20,7 @@ export const SITE_TEXT = {
     'home.lessonNote': 'Neuf questions, une de chaque type.',
     'home.dashboard': 'Tableau de bord',
     'home.dashboardNote':
-      'Le tableau de bord n’est lié depuis aucune page indexable. Pour l’instant, seule l’adresse le protège — voir le README avant de l’utiliser avec une vraie classe.',
+      'Protégé par un nom d’utilisateur et un mot de passe définis dans l’environnement du serveur. Sans eux, le tableau de bord reste ouvert et l’annonce.',
 
     'lesson.title': 'Leçon un',
     'lesson.lede':
@@ -34,6 +34,8 @@ export const SITE_TEXT = {
     'dashboard.lede':
       'Mise à jour toutes les cinq secondes pendant que la page est active. Les requêtes s’arrêtent après une minute d’inactivité, ou dès que l’onglet passe en arrière-plan.',
     'dashboard.docTitle': 'Tableau de bord',
+    'dashboard.unprotected': 'Ce tableau de bord n’est pas protégé : ASKQ_TEACHER_USER, ASKQ_TEACHER_PASSWORD et ASKQ_AUTH_SECRET ne sont pas définis. N’importe qui connaissant l’adresse peut voir les réponses.',
+    'dashboard.signInMissing': 'La connexion enseignant n’est pas configurée. Définis ASKQ_TEACHER_USER, ASKQ_TEACHER_PASSWORD et ASKQ_AUTH_SECRET dans l’environnement du serveur.',
     'dashboard.allGroups': 'Tous les groupes',
 
     'setup.title': 'Mode démonstration.',
@@ -52,7 +54,7 @@ export const SITE_TEXT = {
     'home.lessonNote': 'Nine questions, one of each type.',
     'home.dashboard': 'Teacher dashboard',
     'home.dashboardNote':
-      'The dashboard is not linked from anywhere crawlable. For now the path is the only thing protecting it — see the README before using it with a real class.',
+      'Protected by a username and password set in the server environment. Without them the dashboard stays open, and says so.',
 
     'lesson.title': 'Lesson one',
     'lesson.lede':
@@ -66,6 +68,8 @@ export const SITE_TEXT = {
     'dashboard.lede':
       'Updates every five seconds while this page is active. Polling pauses after a minute without activity, or as soon as the tab goes to the background.',
     'dashboard.docTitle': 'Teacher dashboard',
+    'dashboard.unprotected': 'This dashboard is not protected: ASKQ_TEACHER_USER, ASKQ_TEACHER_PASSWORD and ASKQ_AUTH_SECRET are unset. Anyone who knows the address can read the answers.',
+    'dashboard.signInMissing': 'Teacher sign-in is not configured. Set ASKQ_TEACHER_USER, ASKQ_TEACHER_PASSWORD and ASKQ_AUTH_SECRET in the server environment.',
     'dashboard.allGroups': 'All groups',
 
     'setup.title': 'Demo mode.',

@@ -1,4 +1,5 @@
 import { configure } from '@askq/react';
+import { READ_ENDPOINT } from './dashboard-links';
 
 // Importing the bank registers every question, which is what lets an island
 // resolve a question from its id string.
@@ -12,7 +13,7 @@ import '../questions';
 configure({
   supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL,
   supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  readEndpoint: '/api/answers',
+  readEndpoint: READ_ENDPOINT,
   pollMs: 5000,
   idleMs: 60_000,
   maxSessionMs: 30 * 60_000,

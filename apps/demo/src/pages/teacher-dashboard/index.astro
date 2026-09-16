@@ -1,0 +1,26 @@
+---
+import { isTeacherAuthConfigured } from '../../lib/teacher-auth';
+import UnprotectedNotice from '../../components/UnprotectedNotice.tsx';
+import Base from '../../layouts/Base.astro';
+import Dashboard from '../../components/Dashboard.tsx';
+import SiteText from '../../components/SiteText.tsx';
+
+// Every group on one page. The dashboard holds one poller per group, so this
+// costs one request per group per interval — fine for a handful, and the
+// per-group pages exist for when a class has more.
+
+// Rendered on demand so the middleware guard runs; a prerendered page is a
+// static file the CDN serves without ever asking the server.
+export const prerender = false;
+
+const authConfigured = isTeacherAuthConfigured();
+---
+
+<Base titleKey="dashboard.docTitle" noindex hideIdentity>
+  <SiteText client:load k="dashboard.allGroups" as="h1" />
+  <SiteText client:load k="dashboard.lede" as="p" className="lede" />
+
+  {!authConfigured && <UnprotectedNotice client:load />}
+
+  <Dashboard client:load signOut={authConfigured} show="all" />
+</Base>

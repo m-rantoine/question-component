@@ -247,6 +247,9 @@ import './questions/lesson-one'; // registers the questions
 configure({
   supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL,
   supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+  // Wherever you mounted createAnswersHandler in step 5. There is no default:
+  // the package does not get to decide your app's URLs, and guessing wrong
+  // would mean a dashboard quietly fetching a path that does not exist.
   readEndpoint: '/api/answers',
 });
 ```
@@ -509,8 +512,14 @@ password.
 // src/lib/teacher-auth.ts
 import { createTeacherAuth } from '@askq/react/server';
 
+// loginPath is required and is yours to choose — guard() redirects there, so a
+// value the package guessed would send a locked-out teacher to a 404.
 export const auth = createTeacherAuth({ loginPath: '/teacher/login' });
 ```
+
+**Every path is yours.** The package hardcodes no routes: `readEndpoint`, `loginPath` and
+`<TeacherLogin action>` are all required, so nothing assumes a URL structure your app may
+not have.
 
 **Guard the endpoint, not just the page.** Protecting only the page would look like
 security and provide none — `/api/answers?groupId=lesson-1` returns every answer as JSON
@@ -542,6 +551,8 @@ Then a login page and the two routes it posts to:
 
 ```tsx
 import { TeacherLogin } from '@askq/react/dashboard';
+
+// `action` is required too — the form posts to your route, wherever it is.
 <TeacherLogin action="/api/teacher/login" />;
 ```
 
@@ -681,7 +692,7 @@ configure({ … });         // module scope, last call wins
 | --- | --- | --- |
 | `supabaseUrl` | — | Project URL. Without it, answers stay in memory. |
 | `supabaseAnonKey` | — | Insert-only key. Safe in the client bundle. |
-| `readEndpoint` | `'/api/answers'` | Server route that reads results. Absolute URLs work outside a browser. |
+| `readEndpoint` | **required** once Supabase is set | Your route that reads results. No default — see above. Absolute URLs work outside a browser. |
 | `sessionId` | *(none)* | Default session for every answer. |
 | `pollMs` | `5000` | Dashboard poll interval. |
 | `idleMs` | `60000` | Inactivity before polling pauses. |
@@ -705,7 +716,7 @@ configure({ … });         // module scope, last call wins
 | `secret` | `ASKQ_AUTH_SECRET` | 32 characters or more. |
 | `cookieName` | `'askq_teacher'` | |
 | `maxAgeSeconds` | `43200` | Twelve hours — a school day. |
-| `loginPath` | `'/teacher/login'` | Where `guard()` sends a browser. |
+| `loginPath` | **required** | Your login page. Where `guard()` sends a browser. |
 | `secure` | `true` outside development | Adds `Secure` to the cookie. |
 
 ### Entry points

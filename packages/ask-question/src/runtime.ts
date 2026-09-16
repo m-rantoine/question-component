@@ -5,8 +5,13 @@ export interface AskqConfig {
   supabaseUrl?: string;
   /** Anon key. RLS makes it insert-only, so it is safe in the client bundle. */
   supabaseAnonKey?: string;
-  /** Server route that reads results with the service-role key. */
-  readEndpoint: string;
+  /**
+   * Your route that reads results with the service-role key — wherever you put
+   * `createAnswersHandler`. There is no default: the package does not get to
+   * decide a consuming app's URL structure, and guessing wrong would mean a
+   * dashboard quietly fetching a path that does not exist.
+   */
+  readEndpoint?: string;
   /**
    * Default run identifier attached to every answer — a class period, section
    * or term. Individual components can override it. Leave unset for one
@@ -108,7 +113,6 @@ export interface Runtime {
 }
 
 const DEFAULT_CONFIG: AskqConfig = {
-  readEndpoint: '/api/answers',
   pollMs: 5000,
   idleMs: 60_000,
   maxSessionMs: 30 * 60_000,
