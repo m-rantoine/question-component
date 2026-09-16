@@ -51,20 +51,40 @@ so the server half is the same one line in either.
 
 ## Install
 
-The package is not on npm. Install it straight from git:
+The package is not on npm. It lives in a subdirectory of its repository, so **use pnpm**:
+`path:` is a pnpm extension, and npm and Yarn Classic ignore it. npm given the same string
+installs the repository root instead — silently, with only a `warn npm-package-arg
+ignoring unknown key`.
 
 ```bash
 pnpm add "github:m-rantoine/question-component#path:/packages/ask-question"
-npm  install "github:m-rantoine/question-component#path:/packages/ask-question"
 ```
 
-It builds itself on install, so there is nothing to compile afterwards. React 18 or 19 is
-a peer dependency.
-
-Pin a version by adding a tag or commit before the `#`:
+Pin a version by putting a tag, branch or commit before the `&`:
 
 ```bash
 pnpm add "github:m-rantoine/question-component#v0.1.0&path:/packages/ask-question"
+```
+
+The package builds itself on install, which **pnpm 10 blocks by default**. Allow it once,
+in your project's `pnpm-workspace.yaml`:
+
+```yaml
+onlyBuiltDependencies:
+  - "@askq/react"
+```
+
+Without it the install fails with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`, naming the same
+fix. React 18 or 19 is a peer dependency.
+
+### Using npm or Yarn Classic
+
+Neither can install from a subdirectory. Clone the repository and install a tarball:
+
+```bash
+git clone https://github.com/m-rantoine/question-component.git
+cd question-component/packages/ask-question && pnpm install && npm pack
+cd /your/project && npm install /path/to/askq-react-0.1.0.tgz
 ```
 
 ### If the repository is private

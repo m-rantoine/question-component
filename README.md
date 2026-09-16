@@ -82,6 +82,9 @@ git tag v0.1.0 && git push --tags
 They then pin it with
 `pnpm add "github:m-rantoine/question-component#v0.1.0&path:/packages/ask-question"`.
 
+The `path:` fragment is a pnpm extension — npm ignores it and installs this workspace root
+instead. The package README covers the npm route.
+
 ## Licence
 
 MIT.
