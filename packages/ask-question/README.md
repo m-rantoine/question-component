@@ -165,9 +165,9 @@ The table this produces:
 
 | Column | Type | Notes |
 | --- | --- | --- |
-| `id` | `text` primary key | Minted in the browser, so a retried request cannot duplicate a row. |
-| `student_id` | `text` | Random per sign-in. Not an account. |
-| `student_name` | `text` | What the student typed. |
+| `id` | `uuid` primary key | Minted in the browser by `randomId()`, so a retried request cannot duplicate a row. |
+| `student_id` | `uuid` | Random per sign-in. Not an account. |
+| `student_name` | `text` | What the student typed, 2–60 characters after trimming. |
 | `session_id` | `text`, nullable | Class period, section or term. `null` means unscoped. |
 | `group_id` | `text` | The question group. |
 | `question_id` | `text` | Unique within its group. |
